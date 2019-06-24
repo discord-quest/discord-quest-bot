@@ -16,7 +16,9 @@ LOGGING_CONFIG = {
         "file": {
             "class": "logging.handlers.RotatingFileHandler",
             "level": "DEBUG",
-            "filename": path.join(path.dirname(path.realpath(__file__)), "..", "debug.log"),
+            "filename": path.join(
+                path.dirname(path.realpath(__file__)), "..", "debug.log"
+            ),
             "maxBytes": 1024 * 1024,
             "backupCount": 3,
             "formatter": "default",
