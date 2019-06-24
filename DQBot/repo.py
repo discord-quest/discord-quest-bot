@@ -28,6 +28,7 @@ class TileRepo:
     
     # Import all blocktype images and all entity images
     def reload(self):
+        # TODO: Async this. Since it's done at startup it might not be too bad though
         # for each block type
         for block_type in BlockType:
             # try to import image
