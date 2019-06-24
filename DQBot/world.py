@@ -1,13 +1,13 @@
 import numpy as np
 from PIL import Image
-from .repo import TILE_SIZE
+from .repo import TILE_SIZE, BlockType
 
 # A world that is played by many players through ActiveWorld
 # The grid of each World is the same, but the Entities within it vary for each ActiveWorld
 # Each player has their own ActiveWorld, meaning everyone plays their own copy of the same "base" World.
 class World:
     def __init__(self, grid, tile_repo):
-        self.dimensions = dimensions
+        self.dimensions = grid.shape
 
         # Non-dynamic blocks (walls, etc)
         self.grid = grid
@@ -24,7 +24,7 @@ class World:
             for y in range(self.dimensions[1]):
                 # get the block type and image for that block type
                 block_type = BlockType(self.grid[x,y])
-                block_img = self.repo.block(block_type)
+                block_img = tile_repo.block(block_type)
 
                 # paste onto the image
                 coords = (x * TILE_SIZE, y * TILE_SIZE)

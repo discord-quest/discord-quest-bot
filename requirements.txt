@@ -4,3 +4,4 @@ tortoise-orm
 numpy
 Pillow
 python-dotenv
+aiohttp
