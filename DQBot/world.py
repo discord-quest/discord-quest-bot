@@ -13,7 +13,7 @@ class World:
         self.grid = grid
 
         self.prerender_world(tile_repo)
-        
+
     # Cache the 'grid' (non-dynamic blocks) as an image
     # This renders the *entire* world into a single image and keeps it for later use.
     def prerender_world(self, tile_repo):
@@ -23,7 +23,7 @@ class World:
         for x in range(self.dimensions[0]):
             for y in range(self.dimensions[1]):
                 # get the block type and image for that block type
-                block_type = BlockType(self.grid[x,y])
+                block_type = BlockType(self.grid[x, y])
                 block_img = tile_repo.block(block_type)
 
                 # paste onto the image

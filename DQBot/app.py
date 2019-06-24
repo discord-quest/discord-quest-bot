@@ -5,7 +5,7 @@ from os import path
 
 # TODO: Proper settings setup
 # Includes environment variables from .env at root
-load_dotenv(path.join(path.dirname(__file__), '..', '.env'))
+load_dotenv(path.join(path.dirname(__file__), "..", ".env"))
 
 # Start main event loop
 loop = asyncio.get_event_loop()
