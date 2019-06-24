@@ -3,6 +3,7 @@ from os import getenv
 import numpy as np
 from aiohttp import web
 from .world import World
+from io import BytesIO
 
 # TODO: Async this. Since it's done at startup it might not be too bad though
 
@@ -28,16 +29,29 @@ class RenderServer:
 	# Returns the image URL of the rendered map
 	def add_to_queue(self, active_world):
 		# TODO: Should this be a properly random thing?
-		queue_id = active_world.id
+		queue_id = str(active_world.id)
 
 		self.queue[queue_id] = active_world
-		return self.address + queue_id
+		return self.address + str(queue_id)
 
 	# Actually render the image to an HTTP response
 	# There's not actually any I/O when rendering, so this isn't async.
 	def process_render(self, active_world):
-		# TODO
-		return web.Response(text="It works!")
+		try:
+			# get world
+			world = self.store.worlds[active_world.world_name]
+
+			# get the rendered image
+			image = active_world.render(world)
+
+			# return it
+			buf = BytesIO() # TODO: Allocate initial bytes? also might be more efficient way to do this
+			image.save(buf, format="png")
+
+			return web.Response(body=buf.getvalue(), content_type="application/png")
+		except:
+			# TODO
+			return web.Response(text="Something went wrong")
 
 	async def handle(self, req):
 		# get the id of what we're supposed to render

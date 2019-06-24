@@ -13,16 +13,16 @@ VIEW_SIZE = (6,6)
 # This is what you should actually render for a player
 class ActiveWorld(Model):
     world_name = fields.CharField(20) # Right now maps aren't stored in the database
-    player_id = fields.ForeignKeyField('models.Player', related_name='active_world')
+    player = fields.ForeignKeyField('models.Player', related_name='active_world')
 
     # Perform the requested action in the world, ie move the player, kill the enemy
     def take_action(self):
         pass
 
     # Return an image
-    def render(self):
+    def render(self, world):
         # TODO
         # get world & image from world
         # cut out the view around the player
         # render entities onto it
-        return image
+        return world.image
