@@ -1,8 +1,11 @@
 from enum import Enum
 from os import path, listdir
 from PIL import Image
+import logging
 
 TILE_SIZE = 32
+
+logger = logging.getLogger("__main__")
 
 # Represents non-dynamic blocks that can be in the grid of a world
 class BlockType(Enum):
@@ -38,10 +41,10 @@ class TileRepo:
                 img = Image.open(img_path)
                 self.blocks[block_type] = img
 
-                print("imported %s" % block_type)
+                logging.debug("imported %s" % block_type)
             except:
                 # warn if error
-                print("error importing block type %s" % block_type)
+                logging.error("error importing block type %s" % block_type)
 
         # TODO
         self.entities = {}
@@ -64,7 +67,7 @@ class TileRepo:
                     entity_images[state_name] = img
                 except:
                     # warn if error
-                    print(
+                    logger.error(
                         "error importing state %s for entity %s " % (subdir, state_name)
                     )
 
