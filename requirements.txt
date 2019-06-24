@@ -1,3 +1,6 @@
 discord.py
 aiomysql
 tortoise-orm
+numpy
+Pillow
+python-dotenv
