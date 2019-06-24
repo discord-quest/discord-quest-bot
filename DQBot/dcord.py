@@ -16,4 +16,4 @@ async def run():
 	except:
 		pass
 	finally:
-		server.teardown()
+		await server.teardown()
