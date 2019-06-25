@@ -1,5 +1,5 @@
 from .repo import TileRepo
-from os import getenv
+from os import getenv, path
 import numpy as np
 from aiohttp import web
 from .world import World
@@ -16,9 +16,10 @@ class DataStore:
     def __init__(self):
         self.repo = TileRepo(getenv("TILE_DIR"))
         self.worlds = {
-            "test": World(
-                np.random.randint(1, size=(25, 25), high=3), self.repo
-            )  # Random floor/ground
+            "test": World.from_file(
+		        open(path.join(path.dirname(path.realpath(__file__)), "..", "media/worlds/test.txt"), "r"),
+                self.repo
+            )  # Load from test
         }
         # TODO: Load worlds properly
 

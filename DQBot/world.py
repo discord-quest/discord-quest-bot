@@ -36,3 +36,15 @@ class World:
                 image.paste(block_img, coords)
 
         self.image = image
+
+    # This is a test function, so it's not async or optimised at all
+    def from_file(file, repo):
+        lines = file.read().split("\n")
+        height = len(lines)
+        width = max([len(line) for line in lines])
+        grid = np.ones(shape=(width,height), dtype=np.int8)
+        for y,line in enumerate(lines):
+            for x,char in enumerate(line):
+                grid[x,y] = int(char)
+
+        return World(grid, repo)
