@@ -1,51 +1,56 @@
 from .server import DataStore, RenderServer
 from os import getenv
-
+import logging
 import asyncio
 import tortoise
 from tortoise import Tortoise
 
 class App:
-	async def run(self):
-		# database init
-		await self.db_start()
+    async def run(self):
+        logging.info("Initialising...")
 
-		# rendering
-		self.store = DataStore()
-		self.server = RenderServer(self.store)
+        # database init
+        await self.db_start()
 
-		await self.server.setup()
-		
-		# TODO: Discord.py setup
+        # rendering
+        self.store = DataStore()
+        self.server = RenderServer(self.store)
 
-		# For testing rendering quickly
-		# from .models import Player, ActiveWorld, PlayerEntity
-		# player = Player(discord_id="99999999")
-		# await player.save()
-		# player_entity = PlayerEntity(x=5, y=5)
-		# await player_entity.save()
-		# activeworld = ActiveWorld(world_name="test", player=player, player_entity=player_entity)
-		# await activeworld.save()
+        await self.server.setup()
+        
+        # TODO: Discord.py setup
 
-		## or:
-		## activeworld = await ActiveWorld.first()
-		
-		# print(server.add_to_queue(activeworld))
+        # For testing rendering quickly
+        # from .models import Player, ActiveWorld, PlayerEntity
+        # player = Player(discord_id="99999999")
+        # await player.save()
+        # player_entity = PlayerEntity(x=5, y=5)
+        # await player_entity.save()
+        # activeworld = ActiveWorld(world_name="test", player=player, player_entity=player_entity)
+        # await activeworld.save()
 
-		# keep everything alive by sleeping forever
-		while True:
-			await asyncio.sleep(3600)
+        ## or:
+        ## activeworld = await ActiveWorld.first()
+        
+        # print(server.add_to_queue(activgetLoggereworld))
 
-	async def db_start(self):
-	    await Tortoise.init(
-	        db_url=getenv('DB_URL'), # TODO
-	        modules={'models': ['DQBot.models']}
-	    )
+        logging.debug("Active")
+        # keep everything alive by sleeping forever
+        while True:
+            await asyncio.sleep(3600)
 
-	    await Tortoise.generate_schemas()
+    async def db_start(self):
+        logging.debug("Trying to connect to database...")
+        await Tortoise.init(
+            db_url=getenv('DB_URL'), # TODO
+            modules={'models': ['DQBot.models']}
+        )
+        # todo: dont try to migrate every time
+        await Tortoise.generate_schemas()
+        logging.info("Successfullly connected to database")
+        
+    async def teardown(self):
+        print("Tearing down app")
 
-	async def teardown(self):
-		print("Tearing down app")
-
-		await Tortoise.close_connections()
-		await self.server.teardown()
+        await Tortoise.close_connections()
+        await self.server.teardown()

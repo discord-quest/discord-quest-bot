@@ -6,7 +6,7 @@ from tortoise.models import Model
 from tortoise import fields
 
 # The amount of tiles player around them players can see
-VIEW_SIZE = (6,6)
+VIEW_SIZE = (5, 5)
 
 # A World a player is playing in. This inherits the blocks in it from World,
 # but stores its own entities.
