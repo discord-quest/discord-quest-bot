@@ -46,7 +46,7 @@ class RenderServer:
 			world = self.store.worlds[active_world.world_name]
 
 			# get the rendered image
-			image = await active_world.render(world)
+			image = await active_world.render(world, self.store.repo)
 
 			# return it
 			buf = BytesIO() # TODO: Allocate initial bytes? also might be more efficient way to do this

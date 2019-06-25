@@ -34,7 +34,7 @@ class App:
         ## or:
         ## activeworld = await ActiveWorld.first()
         
-        # print(server.add_to_queue(activgetLoggereworld))
+        # print(self.server.add_to_queue(activeworld))
 
         logger.debug("Active")
         # keep everything alive by sleeping forever
