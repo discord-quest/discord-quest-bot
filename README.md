@@ -21,3 +21,12 @@ Then, to run the bot:
 ```
  $ python run.py
 ```
+
+# Developing
+
+Set up pre-commit hook (for linting):
+
+```
+  $ pip install black
+  $ ln ./scripts/pre_commit .git/hooks/pre-commit 
+```

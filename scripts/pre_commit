@@ -1,0 +1,3 @@
+#!/usr/bin/bash
+# This requires black: https://github.com/python/black
+black .
