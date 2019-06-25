@@ -35,22 +35,22 @@ class RenderServer:
 		return self.address + str(queue_id)
 
 	# Actually render the image to an HTTP response
-	# There's not actually any I/O when rendering, so this isn't async.
-	def process_render(self, active_world):
+	async def process_render(self, active_world):
 		try:
 			# get world
 			world = self.store.worlds[active_world.world_name]
 
 			# get the rendered image
-			image = active_world.render(world)
+			image = await active_world.render(world)
 
 			# return it
 			buf = BytesIO() # TODO: Allocate initial bytes? also might be more efficient way to do this
 			image.save(buf, format="png")
 
 			return web.Response(body=buf.getvalue(), content_type="application/png")
-		except:
+		except Exception as e:
 			# TODO
+			print(str(e))
 			return web.Response(text="Something went wrong")
 
 	async def handle(self, req):
@@ -59,7 +59,7 @@ class RenderServer:
 
 		if queue_id != None and queue_id in self.queue:
 			# render it
-			resp = self.process_render(self.queue[queue_id])
+			resp = await self.process_render(self.queue[queue_id])
 
 			# delete from queue
 			del self.queue[queue_id]

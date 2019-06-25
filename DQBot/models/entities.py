@@ -20,6 +20,9 @@ class Entity(Model):
         raise NotImplementedError("base Entity.get_state called") 
 
 # The player
-class PlayerEntity(Entity):
+# Because this is references by ActiveWorld, inheriting from Entity would cause a catch-22
+class PlayerEntity(Model):
+    x = fields.IntField()
+    y = fields.IntField()
     def get_state(self):
         return "NORMAL"
