@@ -1,7 +1,7 @@
 import numpy as np
 from PIL import Image
 from DQBot.repo import TILE_SIZE, BlockType
-from DQBot.action import ActionType, MoveDirection
+from DQBot.action import ActionType, MoveDirection, Action
 
 from tortoise.models import Model
 from tortoise import fields
@@ -19,11 +19,33 @@ class ActiveWorld(Model):
         "models.PlayerEntity", related_name="active_world"
     )
 
+    # Finds out which actions it is possible to take
+    # Returns array of `Action`s
+    # TODO: Untested
+    async def possible_actions(self, world):
+        await self.fetch_related("player_entity")
+
+        actions = []
+        x, y = (self.player_entity.x, self.player_entity.y)
+
+        if not world.block_at(x, y + 1).collides():
+            actions.append(Action.move(MoveDirection.UP))
+
+        if not world.block_at(x, y - 1).collides():
+            actions.append(Action.move(MoveDirection.DOWN))
+
+        if not world.block_at(x + 1, y).collides():
+            actions.append(Action.move(MoveDirection.RIGHT))
+
+        if not world.block_at(x - 1, y).collides():
+            actions.append(Action.move(MoveDirection.LEFT))
+
+        return actions
+
     # Perform the requested action in the world, ie move the player, kill the enemy
     async def take_action(self, action, world):
         if action.type == ActionType.MOVE:
             await self.fetch_related("player_entity")
-            await self.fetch_related("entities")
 
             x, y = (self.player_entity.x, self.player_entity.y)
 
@@ -45,7 +67,7 @@ class ActiveWorld(Model):
                 has_collision = True
             else:
                 entities_in_direction = await self.entities.filter(x=x, y=y)
-                has_collision = entities_in_direction.count > 0
+                has_collision = len(entities_in_direction) > 0
 
             # only save if no collisions
             if not has_collision:

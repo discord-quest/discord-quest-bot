@@ -38,6 +38,8 @@ class App:
         # from .action import Action, MoveDirection
         # await activeworld.take_action(Action.move(MoveDirection.UP), self.store.worlds[activeworld.world_name])
 
+        # print(await activeworld.possible_actions(self.store.worlds[activeworld.world_name]))
+
         # print(self.server.add_to_queue(activeworld))
 
         logger.debug("Active")

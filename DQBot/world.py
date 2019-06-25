@@ -37,6 +37,10 @@ class World:
 
         self.image = image
 
+    # Helper function
+    def block_at(self, x, y):
+        return BlockType(self.grid[x, y])
+
     # This is a test function, so it's not async or optimised at all
     def from_file(file, repo):
         lines = file.read().split("\n")
