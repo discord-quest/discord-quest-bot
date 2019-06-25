@@ -32,8 +32,11 @@ class App:
         # await activeworld.save()
 
         ## or:
-        ## activeworld = await ActiveWorld.first()
+        # activeworld = await ActiveWorld.first()
         
+        # from .action import Action, MoveDirection
+        # await activeworld.take_action(Action.move(MoveDirection.UP), self.store.worlds[activeworld.world_name])
+
         # print(self.server.add_to_queue(activeworld))
 
         logger.debug("Active")

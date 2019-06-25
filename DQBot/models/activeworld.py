@@ -1,6 +1,7 @@
 import numpy as np
 from PIL import Image
 from DQBot.repo import TILE_SIZE, BlockType
+from DQBot.action import ActionType, MoveDirection
 
 from tortoise.models import Model
 from tortoise import fields
@@ -17,8 +18,41 @@ class ActiveWorld(Model):
     player_entity = fields.ForeignKeyField('models.PlayerEntity', related_name='active_world')
 
     # Perform the requested action in the world, ie move the player, kill the enemy
-    def take_action(self):
-        pass
+    async def take_action(self, action, world):
+        if action.type == ActionType.MOVE:
+            await self.fetch_related('player_entity')
+            await self.fetch_related('entities')
+
+            x, y = (self.player_entity.x, self.player_entity.y)
+            
+            # attempt to move
+            if action.direction == MoveDirection.UP:
+                y -= 1
+            elif action.direction == MoveDirection.DOWN:
+                y += 1
+            elif action.direction == MoveDirection.LEFT:
+                y -= 1
+            elif action.direction == MoveDirection.RIGHT:
+                y += 1
+            else:
+                raise NotImplementedError("Unknown direction: %s" % action.direction)
+
+            # collision detection
+            has_collision = False
+            if BlockType(world.grid[x,y]).collides():
+                has_collision = True
+            else:
+                entities_in_direction = await self.entities.filter(x=x, y=y)
+                has_collision = entities_in_direction.count > 0
+
+            # only save if no collisions
+            if not has_collision:
+                self.player_entity.x = x
+                self.player_entity.y = y
+
+                await self.player_entity.save()
+        else:
+            raise NotImplementedError("Action processing not yet implemented: %s" % action)
 
     async def paste_entity(self, entity, image, repo, lower_bounds, upper_bounds):
         # bounds check
@@ -29,13 +63,13 @@ class ActiveWorld(Model):
         local_world_coords = (entity.x - lower_bounds[0], entity.y - lower_bounds[1])
 
         # then to local image co-ords
-        image_coords = (local_world_coords[0] * TILE_SIZE, local_world_coords[1] * TILE_SIZE)
+        image_coords = ((local_world_coords[0] - 0.5) * TILE_SIZE, (local_world_coords[1] - 0.5) * TILE_SIZE)
 
         # get image to render
         entity_image = repo.entity(entity.get_name(), entity.get_state())
 
         # paste onto map
-        image.paste(entity_image, image_coords)
+        image.paste(entity_image, tuple(int(a) for a in image_coords))
 
     # Return an image
     async def render(self, world, repo):

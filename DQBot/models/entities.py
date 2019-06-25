@@ -24,9 +24,8 @@ class Entity(Model):
     def get_state(self):
         raise NotImplementedError("base Entity.get_state called")
 
-
 # The player
-# Because this is references by ActiveWorld, inheriting from Entity would cause a catch-22
+# Because this is referenced by ActiveWorld, inheriting from Entity would cause a catch-22
 class PlayerEntity(Model):
     x = fields.IntField()
     y = fields.IntField()

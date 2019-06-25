@@ -12,7 +12,8 @@ class BlockType(Enum):
     FLOOR = 1
     WALL = 2
     ERROR = -1  # special error type
-
+    def collides(self):
+        return self != BlockType.FLOOR
 
 # Stores the tile images represented by each block and images for
 # each possible state of an entity as pillow images
