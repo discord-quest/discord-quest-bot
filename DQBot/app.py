@@ -26,7 +26,7 @@ class App:
         # from .models import Player, ActiveWorld, PlayerEntity
         # player = Player(discord_id="99999999")
         # await player.save()
-        # player_entity = PlayerEntity(x=5, y=5)
+        # player_entity = PlayerEntity(x=4, y=4)
         # await player_entity.save()
         # activeworld = ActiveWorld(world_name="test", player=player, player_entity=player_entity)
         # await activeworld.save()

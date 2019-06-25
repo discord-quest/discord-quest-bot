@@ -63,7 +63,7 @@ class ActiveWorld(Model):
         local_world_coords = (entity.x - lower_bounds[0], entity.y - lower_bounds[1])
 
         # then to local image co-ords
-        image_coords = ((local_world_coords[0] - 0.5) * TILE_SIZE, (local_world_coords[1] - 0.5) * TILE_SIZE)
+        image_coords = ((local_world_coords[0]) * TILE_SIZE, (local_world_coords[1]) * TILE_SIZE)
 
         # get image to render
         entity_image = repo.entity(entity.get_name(), entity.get_state())
@@ -79,7 +79,7 @@ class ActiveWorld(Model):
         # cut out the view around the player
         # TODO: Probably nicer looking ways to do this
         section_center = tuple((a + 0.5) * TILE_SIZE for a in (self.player_entity.x, self.player_entity.y))
-        section_top_left = tuple(a - ((VIEW_SIZE[i] // 2) * TILE_SIZE) for i,a in enumerate(section_center))
+        section_top_left = tuple(a - (((VIEW_SIZE[i] // 2) + 0.5) * TILE_SIZE) for i,a in enumerate(section_center))
 
         section_size = tuple(VIEW_SIZE[i] * TILE_SIZE for i in (0,1))
 
