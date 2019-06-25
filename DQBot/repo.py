@@ -5,6 +5,8 @@ import logging
 
 TILE_SIZE = 32
 
+logger = logging.getLogger("repo")
+
 # Represents non-dynamic blocks that can be in the grid of a world
 class BlockType(Enum):
     FLOOR = 1
@@ -39,10 +41,10 @@ class TileRepo:
                 img = Image.open(img_path)
                 self.blocks[block_type] = img
 
-                logging.debug("imported %s" % block_type)
+                logger.debug("imported %s" % block_type)
             except:
                 # warn if error
-                logging.error("error importing block type %s" % block_type)
+                logger.error("error importing block type %s" % block_type)
 
         # TODO
         self.entities = {}

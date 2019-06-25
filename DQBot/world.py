@@ -1,6 +1,9 @@
 import numpy as np
 from PIL import Image
 from .repo import TILE_SIZE, BlockType
+import logging
+
+logger = logging.getLogger("world")
 
 # A world that is played by many players through ActiveWorld
 # The grid of each World is the same, but the Entities within it vary for each ActiveWorld
@@ -17,6 +20,8 @@ class World:
     # Cache the 'grid' (non-dynamic blocks) as an image
     # This renders the *entire* world into a single image and keeps it for later use.
     def prerender_world(self, tile_repo):
+        logger.debug("Caching image for world...")
+        
         size = (self.dimensions[0] * TILE_SIZE, self.dimensions[1] * TILE_SIZE)
         image = Image.new("RGB", size)
 

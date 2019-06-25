@@ -5,9 +5,11 @@ import asyncio
 import tortoise
 from tortoise import Tortoise
 
+logger = logging.getLogger("app")
+
 class App:
     async def run(self):
-        logging.info("Initialising...")
+        logger.info("Initialising...")
 
         # database init
         await self.db_start()
@@ -34,23 +36,23 @@ class App:
         
         # print(server.add_to_queue(activgetLoggereworld))
 
-        logging.debug("Active")
+        logger.debug("Active")
         # keep everything alive by sleeping forever
         while True:
             await asyncio.sleep(3600)
 
     async def db_start(self):
-        logging.debug("Trying to connect to database...")
+        logger.debug("Trying to connect to database...")
         await Tortoise.init(
             db_url=getenv('DB_URL'), # TODO
             modules={'models': ['DQBot.models']}
         )
         # todo: dont try to migrate every time
         await Tortoise.generate_schemas()
-        logging.info("Successfullly connected to database")
+        logger.info("Successfullly connected to database")
         
     async def teardown(self):
-        print("Tearing down app")
+        logger.info("Tearing down app")
 
         await Tortoise.close_connections()
         await self.server.teardown()

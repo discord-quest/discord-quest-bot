@@ -8,6 +8,8 @@ import logging
 
 # TODO: Async this. Since it's done at startup it might not be too bad though
 
+logger = logging.getLogger("server")
+
 # Keeps ownership of the TileRepo and all Worlds
 # Deals with tying ActiveWorlds to Worlds
 class DataStore:
@@ -71,6 +73,8 @@ class RenderServer:
 			return web.Response(text="Something went wrong!")
 
 	async def setup(self):
+		logger.debug("Trying to start render server...")
+
 		self.app = web.Application()
 		self.app.add_routes([web.get('/{id}', self.handle)])
 
@@ -85,7 +89,8 @@ class RenderServer:
 		self.site = web.TCPSite(self.runner, host, port)
 		await self.site.start()
 
-		logging.debug("Render server started at %s" % self.address)
+		logger.debug("Render server started at %s" % self.address)
 
 	async def teardown(self):
+		logger.debug("Tearing down render server..")
 		await self.runner.cleanup()
