@@ -1,7 +1,7 @@
-discord.py
-aiomysql
-tortoise-orm
-numpy
-Pillow
-python-dotenv
-aiohttp
+discord.py==1.2.2
+aiomysql==0.0.20
+tortoise-orm==0.12.2
+numpy==1.16.4
+Pillow==6.0.0
+python-dotenv==0.10.3
+aiohttp==3.5.4
