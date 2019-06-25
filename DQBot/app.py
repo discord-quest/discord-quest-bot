@@ -47,11 +47,11 @@ class App:
     async def db_start(self):
         logger.debug("Trying to connect to database...")
         await Tortoise.init(
-            db_url=getenv('DB_URL'), # TODO
+            db_url=getenv('DB_URL'),
             modules={'models': ['DQBot.models']}
         )
-        # todo: dont try to migrate every time
-        await Tortoise.generate_schemas()
+        # todo: slows stuff down, but should work for now
+        await Tortoise.generate_schemas(safe=True)
         logger.info("Successfullly connected to database")
         
     async def teardown(self):
