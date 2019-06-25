@@ -21,7 +21,7 @@ class World:
     # This renders the *entire* world into a single image and keeps it for later use.
     def prerender_world(self, tile_repo):
         logger.debug("Caching image for world...")
-        
+
         size = (self.dimensions[0] * TILE_SIZE, self.dimensions[1] * TILE_SIZE)
         image = Image.new("RGB", size)
 
@@ -42,9 +42,9 @@ class World:
         lines = file.read().split("\n")
         height = len(lines)
         width = max([len(line) for line in lines])
-        grid = np.ones(shape=(width,height), dtype=np.int8)
-        for y,line in enumerate(lines):
-            for x,char in enumerate(line):
-                grid[x,y] = int(char)
+        grid = np.ones(shape=(width, height), dtype=np.int8)
+        for y, line in enumerate(lines):
+            for x, char in enumerate(line):
+                grid[x, y] = int(char)
 
         return World(grid, repo)

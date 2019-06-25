@@ -24,6 +24,7 @@ class Entity(Model):
     def get_state(self):
         raise NotImplementedError("base Entity.get_state called")
 
+
 # The player
 # Because this is referenced by ActiveWorld, inheriting from Entity would cause a catch-22
 class PlayerEntity(Model):
@@ -32,9 +33,10 @@ class PlayerEntity(Model):
 
     def get_name(self):
         return "PLAYER"
-    
+
     def get_state(self):
         return "NORMAL"
+
 
 # A chest
 # Higher level = better loot

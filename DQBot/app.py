@@ -7,6 +7,7 @@ from tortoise import Tortoise
 
 logger = logging.getLogger("app")
 
+
 class App:
     async def run(self):
         logger.info("Initialising...")
@@ -19,7 +20,7 @@ class App:
         self.server = RenderServer(self.store)
 
         await self.server.setup()
-        
+
         # TODO: Discord.py setup
 
         # For testing rendering quickly
@@ -33,7 +34,7 @@ class App:
 
         ## or:
         # activeworld = await ActiveWorld.first()
-        
+
         # from .action import Action, MoveDirection
         # await activeworld.take_action(Action.move(MoveDirection.UP), self.store.worlds[activeworld.world_name])
 
@@ -47,13 +48,12 @@ class App:
     async def db_start(self):
         logger.debug("Trying to connect to database...")
         await Tortoise.init(
-            db_url=getenv('DB_URL'),
-            modules={'models': ['DQBot.models']}
+            db_url=getenv("DB_URL"), modules={"models": ["DQBot.models"]}
         )
         # todo: slows stuff down, but should work for now
         await Tortoise.generate_schemas(safe=True)
         logger.info("Successfullly connected to database")
-        
+
     async def teardown(self):
         logger.info("Tearing down app")
 
