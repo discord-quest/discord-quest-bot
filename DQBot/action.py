@@ -1,13 +1,16 @@
 from enum import Enum
 
+
 class ActionType(Enum):
     MOVE = 1
     OPEN_CHEST = 2
 
+
 class ActionResultType(Enum):
-    SUCCESS = 1,
-    ERROR = 2,
+    SUCCESS = (1,)
+    ERROR = (2,)
     GOT_LOOT = 3
+
 
 class ActionResult:
     def __init__(self, type, args):
@@ -24,6 +27,7 @@ class ActionResult:
     def got_loot(loot):
         return ActionResult(ActionResultType.GOT_LOOT, (loot,))
 
+
 # co-ord system is 0 is upper-left
 class Direction(Enum):
     UP = 1  # -y
@@ -34,7 +38,7 @@ class Direction(Enum):
 
     # Return pos after moving one unit in this direction
     def mutate(self, pos):
-        x,y = pos
+        x, y = pos
         if self == Direction.UP:
             y -= 1
         elif self == Direction.DOWN:
@@ -43,7 +47,7 @@ class Direction(Enum):
             x -= 1
         elif self == Direction.RIGHT:
             x += 1
-        return (x,y)
+        return (x, y)
 
     def from_delta(base, new):
         if new[0] > base[0]:
@@ -55,7 +59,7 @@ class Direction(Enum):
         elif new[1] < base[1]:
             return Direction.DOWN
         return Direction.NONE
-        
+
 
 class Action:
     # Don't use this directly, instead use the helper functions to ensure consistency

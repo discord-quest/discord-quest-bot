@@ -42,11 +42,17 @@ class ActiveWorld(Model):
         if not world.block_at(x - 1, y).collides():
             actions.append(Action.move(Direction.LEFT))
 
-        surrounding_entities = await self.entities.filter(Q(x__in=(x + 1, x - 1), y=y) | Q(y__in=(y + 1, y - 1), x=x))
+        surrounding_entities = await self.entities.filter(
+            Q(x__in=(x + 1, x - 1), y=y) | Q(y__in=(y + 1, y - 1), x=x)
+        )
 
         for entity in surrounding_entities:
             if entity.__class__ is ChestEntity and not entity.opened:
-                actions.append(Action.open_chest(Direction.from_delta((x,y), (entity.x, entity.y))))
+                actions.append(
+                    Action.open_chest(
+                        Direction.from_delta((x, y), (entity.x, entity.y))
+                    )
+                )
 
         return actions
 
@@ -75,7 +81,9 @@ class ActiveWorld(Model):
             else:
                 return ActionResult.error()
         elif action.type == ActionType.OPEN_CHEST:
-            chest_x, chest_y = action.direction.mutate((self.player_entity.x, self.player_entity.y))
+            chest_x, chest_y = action.direction.mutate(
+                (self.player_entity.x, self.player_entity.y)
+            )
             chest = await self.entities.filter(x=chest_x, y=chest_y).first()
 
             if chest != None and not chest.opened:

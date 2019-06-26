@@ -46,7 +46,7 @@ class PlayerEntity(Model):
             entry = await self.inventory.filter(item_id=item.id).first()
             if entry == None:
                 entry = InventoryEntry(item_id=item.id, player_entity=self, quantity=0)
-            
+
             entry.quantity += 1
 
             await entry.save()
