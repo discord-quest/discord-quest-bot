@@ -1,11 +1,14 @@
 from .server import DataStore, RenderServer
 from .inventory import ItemStore
+from .dcord import Quest
 from os import getenv
 import logging
 import asyncio
 import tortoise
 from tortoise import Tortoise
 import random
+
+from discord.ext.commands import Bot
 
 logger = logging.getLogger("app")
 
@@ -43,7 +46,13 @@ class App:
         await self.server.setup()
 
         # await test_chest(self.store, self.item_store)
-        # TODO: Discord.py setup
+
+        self.bot = Bot(command_prefix=";")
+        self.cog = Quest(self.bot, self)
+
+        self.bot.add_cog(self.cog)
+
+        await self.bot.start(getenv("BOT_TOKEN"))
 
         logger.debug("Active")
         # keep everything alive by sleeping forever

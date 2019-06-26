@@ -79,7 +79,6 @@ class ActiveWorld(Model):
             chest = await self.entities.filter(x=chest_x, y=chest_y).first()
 
             if chest != None and not chest.opened:
-                # TODO: Roll loot & add to inventory
                 loot = item_store.roll_loot(chest.level)
 
                 await self.player_entity.add_items(loot)
