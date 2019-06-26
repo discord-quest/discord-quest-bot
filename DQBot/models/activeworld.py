@@ -1,10 +1,12 @@
 import numpy as np
 from PIL import Image
 from DQBot.repo import TILE_SIZE, BlockType
-from DQBot.action import ActionType, MoveDirection, Action
+from DQBot.action import ActionType, Direction, Action
+from DQBot.models.entities import ChestEntity
 
 from tortoise.models import Model
 from tortoise import fields
+from tortoise.query_utils import Q
 
 # The amount of tiles player around them players can see
 VIEW_SIZE = (5, 5)
@@ -29,16 +31,22 @@ class ActiveWorld(Model):
         x, y = (self.player_entity.x, self.player_entity.y)
 
         if not world.block_at(x, y + 1).collides():
-            actions.append(Action.move(MoveDirection.UP))
+            actions.append(Action.move(Direction.DOWN))
 
         if not world.block_at(x, y - 1).collides():
-            actions.append(Action.move(MoveDirection.DOWN))
+            actions.append(Action.move(Direction.UP))
 
         if not world.block_at(x + 1, y).collides():
-            actions.append(Action.move(MoveDirection.RIGHT))
+            actions.append(Action.move(Direction.RIGHT))
 
         if not world.block_at(x - 1, y).collides():
-            actions.append(Action.move(MoveDirection.LEFT))
+            actions.append(Action.move(Direction.LEFT))
+
+        surrounding_entities = await self.entities.filter(Q(x__in=(x + 1, x - 1), y=y) | Q(y__in=(y + 1, y - 1), x=x))
+
+        for entity in surrounding_entities:
+            if entity.__class__ is ChestEntity and not entity.opened:
+                actions.append(Action.open_chest(Direction.from_delta((x,y), (entity.x, entity.y))))
 
         return actions
 
@@ -47,19 +55,7 @@ class ActiveWorld(Model):
         if action.type == ActionType.MOVE:
             await self.fetch_related("player_entity")
 
-            x, y = (self.player_entity.x, self.player_entity.y)
-
-            # attempt to move
-            if action.direction == MoveDirection.UP:
-                y -= 1
-            elif action.direction == MoveDirection.DOWN:
-                y += 1
-            elif action.direction == MoveDirection.LEFT:
-                y -= 1
-            elif action.direction == MoveDirection.RIGHT:
-                y += 1
-            else:
-                raise NotImplementedError("Unknown direction: %s" % action.direction)
+            x, y = action.direction.mutate((self.player_entity.x, self.player_entity.y))
 
             # collision detection
             has_collision = False
@@ -75,6 +71,15 @@ class ActiveWorld(Model):
                 self.player_entity.y = y
 
                 await self.player_entity.save()
+        elif action.type == ActionType.OPEN_CHEST:
+            chest_x, chest_y = action.direction.mutate((x,y))
+            chest = await self.entities.filter(x=chest_x, y=chest_y)
+
+            if chest != None and not chest.opened:
+                # TODO: Roll loot & add to inventory
+
+                chest.opened = True
+                await chest.save()
         else:
             raise NotImplementedError(
                 "Action processing not yet implemented: %s" % action

@@ -35,8 +35,8 @@ class App:
         ## or:
         # activeworld = await ActiveWorld.first()
 
-        # from .action import Action, MoveDirection
-        # await activeworld.take_action(Action.move(MoveDirection.UP), self.store.worlds[activeworld.world_name])
+        # from .action import Action, Direction
+        # await activeworld.take_action(Action.move(Direction.UP), self.store.worlds[activeworld.world_name])
 
         # print(await activeworld.possible_actions(self.store.worlds[activeworld.world_name]))
 
