@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class ActionType(Enum):
     MOVE = 1
 
@@ -22,3 +21,11 @@ class Action:
 
     def move(direction):
         return Action(ActionType.MOVE, (direction,))
+
+    def __str__(self):
+        if self.type == ActionType.MOVE:
+            return "MOVE %s" % self.direction
+        else:
+            return "%s" % self.type
+
+    __repr__ = __str__

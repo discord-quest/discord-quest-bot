@@ -40,7 +40,7 @@ class PlayerEntity(Model):
 
 # A chest
 # Higher level = better loot
-class ChestEntity(Entity, Model):
+class ChestEntity(Entity):
     # TODO: Inheritance isn't working properly for some reason
     active_world = fields.ForeignKeyField("models.ActiveWorld", related_name="entities")
     x = fields.IntField()
