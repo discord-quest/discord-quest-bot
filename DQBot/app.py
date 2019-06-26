@@ -4,9 +4,7 @@ from .utils import get_dev_IDs
 from os import getenv, listdir, path
 import logging
 import asyncio
-import tortoise
 from tortoise import Tortoise
-import random
 
 import discord
 from discord.ext import commands

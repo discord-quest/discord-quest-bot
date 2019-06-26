@@ -1,5 +1,3 @@
-import numpy as np
-from PIL import Image
 from DQBot.repo import TILE_SIZE, BlockType
 from DQBot.action import ActionType, Direction, Action, ActionResult
 from DQBot.models.entities import ChestEntity

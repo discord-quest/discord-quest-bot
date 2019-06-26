@@ -1,7 +1,6 @@
 from DQBot import App
 from os import path, getenv
 
-import logging
 import logging.config
 
 import asyncio

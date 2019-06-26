@@ -1,7 +1,6 @@
 from DQBot.utils import get_dev_IDs
 from traceback import format_exception
 
-import discord
 from discord.ext import commands
 
 
