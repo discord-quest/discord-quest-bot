@@ -1,4 +1,5 @@
 from enum import Enum
+import random
 
 class Item:
 	id = -1
@@ -14,19 +15,30 @@ class MeleeWeapon:
 	damage = 0
 
 class BasicSword(MeleeWeapon):
-	id = 1
+	id = 0
 	friendly_name = "Basic Sword"
 	damage = 2
 	tier = 1
 
 class ItemStore:
 	def __init__(self):
-		# TODO: Load item data from somewhere
+		# TODO: This is stored really inefficiently
 		self.items = [ 
 			# Note: This needs to always be sorted by tier
-			BasicSword()
+			BasicSword() # Index 0 = ID 0
+		]
+
+		# tiers[tier-1] is the range (last exclusive) of indexes of items that are in that tier
+		self.tiers = [
+			(0, 0)
 		]
 
 	def roll_loot(self, tier):
-		# TODO
-		return [self.items[0]]
+		# Amount of items = tier, starting at tier 1
+		return [self.roll_item(tier) for i in range(tier)]
+
+	def roll_item(self, tier):
+		possible = self.tiers[tier-1]
+		selected = random.randint(possible[0], possible[1])
+		print(selected)
+		return self.items[selected]

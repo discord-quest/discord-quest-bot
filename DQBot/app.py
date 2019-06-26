@@ -28,9 +28,6 @@ logger = logging.getLogger("app")
     # await activeworld.take_action(Action.open_chest(Direction.RIGHT), store.worlds[activeworld.world_name], item_store)
     # print(await player_entity.inventory.all())
 
-    # print(self.server.add_to_queue(activeworld))
-
-
 class App:
     async def run(self):
         logger.info("Initialising...")
