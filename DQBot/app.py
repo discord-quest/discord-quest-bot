@@ -7,6 +7,7 @@ import tortoise
 from tortoise import Tortoise
 import random
 
+import discord
 from discord.ext import commands
 
 logger = logging.getLogger("app")
@@ -47,7 +48,20 @@ class App:
 
         # await test_chest(self.store, self.item_store)
 
-        self.bot = commands.Bot(command_prefix=";")
+        class DQBot(commands.Bot):
+            # Overwrites default owner check to allow for multiple owners as defined in .env
+            async def is_owner(self, user: discord.User):
+                if user.id in [int(f) for f in getenv("DEV_IDS").split(";")]:
+                    return True
+
+                # Else fall back to the original
+                return await super().is_owner(user)
+
+        self.bot = DQBot(command_prefix=";")
+
+        self.bot.load_extension(
+            "jishaku"
+        )  # Load jishaku (dev tools) https://github.com/Gorialis/jishaku
         for filename in listdir(
             path.join(path.dirname(path.realpath(__file__)), "cogs")
         ):
