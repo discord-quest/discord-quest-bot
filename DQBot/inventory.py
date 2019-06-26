@@ -27,6 +27,6 @@ class ItemStore:
 			BasicSword()
 		]
 
-	def roll_loot(self, tier, number):
+	def roll_loot(self, tier):
 		# TODO
 		return [self.items[0]]

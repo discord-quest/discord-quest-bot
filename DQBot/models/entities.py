@@ -1,6 +1,8 @@
 from tortoise.models import Model
 from tortoise import fields
 
+from .inventory import InventoryEntry
+
 # A base class for all entities to inherit from
 # An entity is anything that could vary between each player's world.
 # For example an enemy which takes damage and eventually dies
@@ -39,8 +41,15 @@ class PlayerEntity(Model):
 
     # add items to inventory
     async def add_items(self, items):
-        # TODO
-        pass
+        for item in items:
+            # check for existing one
+            entry = await self.inventory.filter(item_id=item.id).first()
+            if entry == None:
+                entry = InventoryEntry(item_id=item.id, player_entity=self, quantity=0)
+            
+            entry.quantity += 1
+
+            await entry.save()
 
 
 # A chest
@@ -51,7 +60,7 @@ class ChestEntity(Entity):
     x = fields.IntField()
     y = fields.IntField()
     level = fields.IntField()
-    opened = fields.BooleanField()
+    opened = fields.BooleanField(default=False)
 
     class Meta:
         unique_together = [("active_world", "x", "y")]

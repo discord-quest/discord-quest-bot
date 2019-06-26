@@ -1,11 +1,34 @@
 from .server import DataStore, RenderServer
+from .inventory import ItemStore
 from os import getenv
 import logging
 import asyncio
 import tortoise
 from tortoise import Tortoise
+import random
 
 logger = logging.getLogger("app")
+
+# For testing stuff
+# async def test_chest(store, item_store):
+    # from .models import Player, ActiveWorld, PlayerEntity, ChestEntity
+    # from .action import Action, Direction
+
+    # player = Player(discord_id=str(random.random() * 100))
+    # await player.save()
+    # player_entity = PlayerEntity(x=4, y=4)
+    # await player_entity.save()
+    # activeworld = ActiveWorld(world_name="test", player=player, player_entity=player_entity)
+    # await activeworld.save()
+
+    # chest = ChestEntity(x=5, y=4, level=1, active_world=activeworld)
+    # await chest.save()
+
+    # print(await player_entity.inventory.all())
+    # await activeworld.take_action(Action.open_chest(Direction.RIGHT), store.worlds[activeworld.world_name], item_store)
+    # print(await player_entity.inventory.all())
+
+    # print(self.server.add_to_queue(activeworld))
 
 
 class App:
@@ -17,30 +40,13 @@ class App:
 
         # rendering
         self.store = DataStore()
+        self.item_store = ItemStore()
         self.server = RenderServer(self.store)
 
         await self.server.setup()
 
+        # await test_chest(self.store, self.item_store)
         # TODO: Discord.py setup
-
-        # For testing rendering quickly
-        # from .models import Player, ActiveWorld, PlayerEntity
-        # player = Player(discord_id="99999999")
-        # await player.save()
-        # player_entity = PlayerEntity(x=4, y=4)
-        # await player_entity.save()
-        # activeworld = ActiveWorld(world_name="test", player=player, player_entity=player_entity)
-        # await activeworld.save()
-
-        ## or:
-        # activeworld = await ActiveWorld.first()
-
-        # from .action import Action, Direction
-        # await activeworld.take_action(Action.move(Direction.UP), self.store.worlds[activeworld.world_name], item_store)
-
-        # print(await activeworld.possible_actions(self.store.worlds[activeworld.world_name]))
-
-        # print(self.server.add_to_queue(activeworld))
 
         logger.debug("Active")
         # keep everything alive by sleeping forever

@@ -52,9 +52,8 @@ class ActiveWorld(Model):
 
     # Perform the requested action in the world, ie move the player, kill the enemy
     async def take_action(self, action, world, item_store):
+        await self.fetch_related("player_entity")
         if action.type == ActionType.MOVE:
-            await self.fetch_related("player_entity")
-
             x, y = action.direction.mutate((self.player_entity.x, self.player_entity.y))
 
             # collision detection
@@ -76,12 +75,12 @@ class ActiveWorld(Model):
             else:
                 return ActionResult.error()
         elif action.type == ActionType.OPEN_CHEST:
-            chest_x, chest_y = action.direction.mutate((x,y))
-            chest = await self.entities.filter(x=chest_x, y=chest_y)
+            chest_x, chest_y = action.direction.mutate((self.player_entity.x, self.player_entity.y))
+            chest = await self.entities.filter(x=chest_x, y=chest_y).first()
 
             if chest != None and not chest.opened:
                 # TODO: Roll loot & add to inventory
-                loot = item_store.roll_loot()
+                loot = item_store.roll_loot(chest.level)
 
                 await self.player_entity.add_items(loot)
 
