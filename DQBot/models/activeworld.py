@@ -1,7 +1,7 @@
 import numpy as np
 from PIL import Image
 from DQBot.repo import TILE_SIZE, BlockType
-from DQBot.action import ActionType, Direction, Action
+from DQBot.action import ActionType, Direction, Action, ActionResult
 from DQBot.models.entities import ChestEntity
 
 from tortoise.models import Model
@@ -51,7 +51,7 @@ class ActiveWorld(Model):
         return actions
 
     # Perform the requested action in the world, ie move the player, kill the enemy
-    async def take_action(self, action, world):
+    async def take_action(self, action, world, item_store):
         if action.type == ActionType.MOVE:
             await self.fetch_related("player_entity")
 
@@ -71,15 +71,26 @@ class ActiveWorld(Model):
                 self.player_entity.y = y
 
                 await self.player_entity.save()
+
+                return ActionResult.success()
+            else:
+                return ActionResult.error()
         elif action.type == ActionType.OPEN_CHEST:
             chest_x, chest_y = action.direction.mutate((x,y))
             chest = await self.entities.filter(x=chest_x, y=chest_y)
 
             if chest != None and not chest.opened:
                 # TODO: Roll loot & add to inventory
+                loot = item_store.roll_loot()
+
+                await self.player_entity.add_items(loot)
 
                 chest.opened = True
                 await chest.save()
+
+                return ActionResult.got_loot(loot)
+            else:
+                return ActionResult.error()
         else:
             raise NotImplementedError(
                 "Action processing not yet implemented: %s" % action

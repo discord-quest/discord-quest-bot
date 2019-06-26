@@ -37,6 +37,11 @@ class PlayerEntity(Model):
     def get_state(self):
         return "NORMAL"
 
+    # add items to inventory
+    async def add_items(self, items):
+        # TODO
+        pass
+
 
 # A chest
 # Higher level = better loot

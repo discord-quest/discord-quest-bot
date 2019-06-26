@@ -4,6 +4,25 @@ class ActionType(Enum):
     MOVE = 1
     OPEN_CHEST = 2
 
+class ActionResultType(Enum):
+    SUCCESS = 1,
+    ERROR = 2,
+    GOT_LOOT = 3
+
+class ActionResult:
+    def __init__(self, type, args):
+        self.type = type
+        if self.type == ActionResultType.GOT_LOOT:
+            self.loot = args
+
+    def success():
+        return ActionResult(ActionResultType.SUCCESS, ())
+
+    def error():
+        return ActionResult(ActionResultType.ERROR, ())
+
+    def got_loot(loot):
+        return ActionResult(ActionResultType.GOT_LOOT, (loot,))
 
 # co-ord system is 0 is upper-left
 class Direction(Enum):
