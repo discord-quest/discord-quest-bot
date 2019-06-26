@@ -1,5 +1,6 @@
 from .server import DataStore, RenderServer
 from .inventory import ItemStore
+from .utils import get_dev_IDs
 from os import getenv, listdir, path
 import logging
 import asyncio
@@ -51,7 +52,7 @@ class App:
         class DQBot(commands.Bot):
             # Overwrites default owner check to allow for multiple owners as defined in .env
             async def is_owner(self, user: discord.User):
-                if user.id in [int(f) for f in getenv("DEV_IDS").split(";")]:
+                if user.id in get_dev_IDs():
                     return True
 
                 # Else fall back to the original
@@ -65,10 +66,11 @@ class App:
         for filename in listdir(
             path.join(path.dirname(path.realpath(__file__)), "cogs")
         ):
-            try:
-                self.bot.load_extension(filename)
-            except commands.ExtensionError as e:
-                logger.error(e)
+            if filename.endswith(".py"):
+                try:
+                    self.bot.load_extension(f"DQBot.cogs.{filename[0:-3]}")
+                except commands.ExtensionError as e:
+                    logger.error(e)
 
         await self.bot.start(getenv("BOT_TOKEN"))
 
