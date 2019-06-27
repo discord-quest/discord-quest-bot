@@ -6,3 +6,4 @@ Pillow==6.0.0
 python-dotenv==0.10.3
 aiohttp==3.5.4
 jishaku==1.14.0.129
+aiofiles

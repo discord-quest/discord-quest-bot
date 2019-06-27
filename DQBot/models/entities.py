@@ -26,6 +26,9 @@ class Entity(Model):
     def get_state(self):
         raise NotImplementedError("base Entity.get_state called")
 
+    def from_json(json):
+        raise NotImplementedError("base Entity.from_json called")
+
 
 # The player
 # Because this is referenced by ActiveWorld, inheriting from Entity would cause a catch-22
@@ -70,3 +73,16 @@ class ChestEntity(Entity):
 
     def get_state(self):
         return "OPENED" if self.opened else "CLOSED"
+
+    def from_dict(obj):
+        entity = ChestEntity()
+        entity.x = int(obj['x'])
+        entity.y = int(obj['y'])
+        entity.level = int(obj['level'])
+        entity.opened = obj['opened'] == "True"
+        return entity
+
+    def __str__(self):
+        return "<ChestEntity %s: (%s,%s) in id %s, level %s, opened: %s>" % (self.id, self.x, self.y, self.active_world_id, self.level, self.opened)
+
+    __repr__ = __str__

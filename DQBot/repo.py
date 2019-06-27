@@ -49,7 +49,6 @@ class TileRepo:
                 # warn if error
                 logger.error("error importing block type %s" % block_type)
 
-        # TODO
         self.entities = {}
 
         # for each entitytype

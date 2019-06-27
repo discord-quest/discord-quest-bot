@@ -1,10 +1,11 @@
 from .repo import TileRepo
-from os import getenv, path
+from os import getenv, path, listdir
 import numpy as np
 from aiohttp import web
-from .world import World
+from .world import World, BundledWorld
 from io import BytesIO
 import logging
+import aiofiles
 
 # TODO: Async this. Since it's done at startup it might not be too bad though
 
@@ -15,20 +16,21 @@ logger = logging.getLogger("server")
 class DataStore:
     def __init__(self):
         self.repo = TileRepo(getenv("TILE_DIR"))
-        self.worlds = {
-            "test": World.from_file(
-                open(
-                    path.join(
-                        path.dirname(path.realpath(__file__)),
-                        "..",
-                        "media/worlds/test.txt",
-                    ),
-                    "r",
-                ),
-                self.repo,
-            )  # Load from test
-        }
-        # TODO: Load worlds properly
+        self.bundled_worlds = {}
+
+    async def ready(self):
+        world_dir = getenv("WORLD_DIR")
+
+        # this part cant be done async yet
+        worlds = [
+            (x.split(".")[0], path.join(world_dir, x))
+            for x in listdir(world_dir)
+            if path.isfile(path.join(world_dir, x))
+        ]
+
+        for (world_name, world_path) in worlds:
+            async with aiofiles.open(world_path, "r") as f:
+                self.bundled_worlds[world_name] = await BundledWorld.from_file(f, self.repo)
 
 
 # Deals with rendering worlds and preventing them to the user
@@ -51,7 +53,7 @@ class RenderServer:
     async def process_render(self, active_world):
         try:
             # get world
-            world = self.store.worlds[active_world.world_name]
+            world = self.store.bundled_worlds[active_world.world_name].world
 
             # get the rendered image
             image = await active_world.render(world, self.store.repo)

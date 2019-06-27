@@ -2,6 +2,8 @@ import numpy as np
 from PIL import Image
 from .repo import TILE_SIZE, BlockType
 import logging
+import json
+import DQBot.models.entities as entities
 
 logger = logging.getLogger("world")
 
@@ -41,9 +43,8 @@ class World:
     def block_at(self, x, y):
         return BlockType(self.grid[x, y])
 
-    # This is a test function, so it's not async or optimised at all
-    def from_file(file, repo):
-        lines = file.read().split("\n")
+    def from_text(text):
+        lines = [x.strip() for x in text.split("\n")]
         height = len(lines)
         width = max([len(line) for line in lines])
         grid = np.ones(shape=(width, height), dtype=np.int8)
@@ -51,4 +52,32 @@ class World:
             for x, char in enumerate(line):
                 grid[x, y] = int(char)
 
-        return World(grid, repo)
+        return grid
+
+ENTITY_CLASS = {
+    'Chest': entities.ChestEntity
+}
+
+class BundledWorld:
+    def __init__(self, world, entities):
+        self.world = world
+        self.entities = entities
+
+    def parse_entities(text):
+        arr = []
+        for obj in json.loads(text):
+            inst = ENTITY_CLASS[obj['type']].from_dict(obj)
+            arr.append(inst)
+        return arr
+
+    async def from_file(file, repo):
+        contents = await file.read()
+
+        (grid_chunk, entities_chunk) = contents.split("---")
+        
+        grid = World.from_text(grid_chunk)
+        world = World(grid, repo)
+
+        entities = BundledWorld.parse_entities(entities_chunk)
+
+        return BundledWorld(world, entities)
