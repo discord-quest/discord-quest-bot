@@ -11,6 +11,7 @@ from discord.ext import commands
 
 logger = logging.getLogger("app")
 
+
 class App:
     async def run(self):
         logger.info("Initialising...")
@@ -21,7 +22,7 @@ class App:
         # rendering
         self.store = DataStore()
         await self.store.ready()
-        
+
         self.item_store = ItemStore()
         self.server = RenderServer(self.store)
 

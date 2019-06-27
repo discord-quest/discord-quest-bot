@@ -30,7 +30,9 @@ class DataStore:
 
         for (world_name, world_path) in worlds:
             async with aiofiles.open(world_path, "r") as f:
-                self.bundled_worlds[world_name] = await BundledWorld.from_file(f, self.repo)
+                self.bundled_worlds[world_name] = await BundledWorld.from_file(
+                    world_name, f, self.repo
+                )
 
 
 # Deals with rendering worlds and preventing them to the user

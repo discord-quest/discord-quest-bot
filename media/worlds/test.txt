@@ -13,8 +13,13 @@
 	{
 		"type": "Chest",
 		"x": 5,
-		"y": 5,
+		"y": 3,
 		"level": 0,
 		"opened": "False"
+	},
+	{
+		"type": "Player",
+		"x": "4",
+		"y": "3"
 	}
 ]

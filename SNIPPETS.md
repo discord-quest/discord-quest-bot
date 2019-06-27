@@ -64,4 +64,8 @@ inventory = await player_entity.inventory.all() # Array of InventoryEntries, one
 # Requires ItemStore which should (ideally) be kept only in App
 item = item_store.items[entry.item_id]
 
+# Create a new ActiveWorld
+# Requires DataStore, which should be kept with App
+active_world = store.bundled_worlds['test'].create_for(player)
+
 ```

@@ -4,6 +4,7 @@ from .repo import TILE_SIZE, BlockType
 import logging
 import json
 import DQBot.models.entities as entities
+from DQBot.models import ActiveWorld, PlayerEntity
 
 logger = logging.getLogger("world")
 
@@ -54,30 +55,58 @@ class World:
 
         return grid
 
-ENTITY_CLASS = {
-    'Chest': entities.ChestEntity
-}
+
+ENTITY_CLASS = {"Chest": entities.ChestEntity}
+
 
 class BundledWorld:
-    def __init__(self, world, entities):
+    def __init__(self, name, world, entities, player_x, player_y):
+        self.name = name
         self.world = world
         self.entities = entities
+        self.player_x = player_x
+        self.player_y = player_y
 
     def parse_entities(text):
         arr = []
+        player_x, player_y = (None, None)
         for obj in json.loads(text):
-            inst = ENTITY_CLASS[obj['type']].from_dict(obj)
-            arr.append(inst)
-        return arr
+            if obj["type"] == "Player":
+                player_x = int(obj["x"])
+                player_y = int(obj["y"])
+            else:
+                clazz = ENTITY_CLASS[obj["type"]]
+                arr.append((clazz, obj))
 
-    async def from_file(file, repo):
+        if player_x == None:
+            raise ValueError("No playerentity found for map")
+
+        return (player_x, player_y, arr)
+
+    async def from_file(name, file, repo):
         contents = await file.read()
 
         (grid_chunk, entities_chunk) = contents.split("---")
-        
+
         grid = World.from_text(grid_chunk)
         world = World(grid, repo)
 
-        entities = BundledWorld.parse_entities(entities_chunk)
+        (player_x, player_y, entities) = BundledWorld.parse_entities(entities_chunk)
 
-        return BundledWorld(world, entities)
+        return BundledWorld(name, world, entities, player_x, player_y)
+
+    async def create_for(self, player):
+        player_entity = PlayerEntity(x=self.player_x, y=self.player_y)
+        await player_entity.save()
+
+        active_world = ActiveWorld(
+            player=player, player_entity=player_entity, world_name=self.name
+        )
+        await active_world.save()
+
+        for (clazz, attr) in self.entities:
+            inst = clazz.from_dict(attr)
+            inst.active_world_id = active_world.id
+            await inst.save()
+
+        return active_world

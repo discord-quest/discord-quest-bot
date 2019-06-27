@@ -76,13 +76,20 @@ class ChestEntity(Entity):
 
     def from_dict(obj):
         entity = ChestEntity()
-        entity.x = int(obj['x'])
-        entity.y = int(obj['y'])
-        entity.level = int(obj['level'])
-        entity.opened = obj['opened'] == "True"
+        entity.x = int(obj["x"])
+        entity.y = int(obj["y"])
+        entity.level = int(obj["level"])
+        entity.opened = obj["opened"] == "True"
         return entity
 
     def __str__(self):
-        return "<ChestEntity %s: (%s,%s) in id %s, level %s, opened: %s>" % (self.id, self.x, self.y, self.active_world_id, self.level, self.opened)
+        return "<ChestEntity %s: (%s,%s) in id %s, level %s, opened: %s>" % (
+            self.id,
+            self.x,
+            self.y,
+            self.active_world_id,
+            self.level,
+            self.opened,
+        )
 
     __repr__ = __str__
