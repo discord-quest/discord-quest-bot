@@ -1,5 +1,10 @@
 # discord-quest-bot
-Discord bot for the Discord Hackweek.
+Discord bot for the Discord Hackweek. Will probably be released publicly later. For now, please use the support server below to play.
+
+# Support Server
+
+Please join in order to report bugs, seek help with the bot, or just to play.
+**[Click here to join!](discordapp.com/invite/HMakTvr)**
 
 # Running
 
