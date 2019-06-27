@@ -6,6 +6,7 @@ from .world import World, BundledWorld
 from io import BytesIO
 import logging
 import aiofiles
+import asyncio
 
 # TODO: Async this. Since it's done at startup it might not be too bad though
 
@@ -49,7 +50,14 @@ class RenderServer:
         queue_id = str(active_world.id)
 
         self.queue[queue_id] = active_world
-        return self.address + str(queue_id)
+        return self.address + str(queue_id) + ".png"
+
+    async def remove_from_queue(self, queue_id):
+        # give them a minute to request it again
+        # apparently discord does some funky stuff with the images
+        # so it might be got more than once
+        await asyncio.sleep(60)
+        del self.queue[queue_id]
 
     # Actually render the image to an HTTP response
     async def process_render(self, active_world):
@@ -79,8 +87,8 @@ class RenderServer:
             # render it
             resp = await self.process_render(self.queue[queue_id])
 
-            # delete from queue
-            del self.queue[queue_id]
+            # schedule delete from queue
+            asyncio.create_task(self.remove_from_queue(queue_id))
 
             return resp
         else:
@@ -90,7 +98,7 @@ class RenderServer:
         logger.debug("Trying to start render server...")
 
         self.app = web.Application()
-        self.app.add_routes([web.get("/{id}", self.handle)])
+        self.app.add_routes([web.get("/{id}.png", self.handle)])
 
         self.runner = web.AppRunner(self.app)
         await self.runner.setup()

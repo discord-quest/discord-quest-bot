@@ -38,6 +38,7 @@ class App:
                 return await super().is_owner(user)
 
         self.bot = DQBot(command_prefix=";")
+        self.bot.app = self
 
         self.bot.load_extension(
             "jishaku"
