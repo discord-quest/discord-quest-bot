@@ -4,7 +4,7 @@ Discord bot for the Discord Hackweek. Will probably be released publicly later. 
 # Support Server
 
 Please join in order to report bugs, seek help with the bot, or just to play.
-**[Click here to join!](discordapp.com/invite/HMakTvr)**
+**[Click here to join!](https://discordapp.com/invite/HMakTvr)**
 
 # Running
 
