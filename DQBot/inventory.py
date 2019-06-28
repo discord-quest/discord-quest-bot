@@ -5,6 +5,7 @@ import random
 class Item:
     id = -1
     friendly_name = "missingno"
+    description = "???"
     capabilities = []
     tier = 9999
 
@@ -21,6 +22,7 @@ class MeleeWeapon:
 class BasicSword(MeleeWeapon):
     id = 0
     friendly_name = "Basic Sword"
+    description = "a normal sword"
     damage = 2
     tier = 1
 
