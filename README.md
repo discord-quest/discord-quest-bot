@@ -1,5 +1,8 @@
 # discord-quest-bot
-Discord bot for the Discord Hackweek. Will probably be released publicly later. For now, please use the support server below to play.
+
+Discord bot for the Discord Hackweek. You can add it to your server [here](https://discordapp.com/oauth2/authorize?client_id=592763216002547723&scope=bot&permissions=19520). This is hosted on a heroku hobby instance.
+
+The only command you'll need is `;play`
 
 # Support Server
 
