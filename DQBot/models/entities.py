@@ -173,7 +173,7 @@ class ZombieEntity(EnemyEntity):
     max_health = 4
     speed = 1
     exp_reward = 2
-    damage = 2
+    damage = 1
     vision_distance = 4
 
     def from_dict(obj):
