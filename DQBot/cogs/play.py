@@ -171,7 +171,7 @@ class Play(commands.Cog):
 
                 embed = result.mutate_embed(embed)
 
-            if len(embed.fields) > 0:
+            if len(embed.fields) > 0 or embed.title != None:
                 await reaction.message.channel.send(embed=embed)
 
             if did_conclude:

@@ -17,7 +17,8 @@ class ActionResultType(Enum):
     SUCCESS = (1,)
     ERROR = (2,)
     GOT_LOOT = (3,)
-    DID_DAMAGE = 4
+    DID_DAMAGE = 4,
+    HEAL = 5
 
 
 class ActionResult:
@@ -30,6 +31,8 @@ class ActionResult:
             self.name = args[1].friendly_name
             self.dead = args[1].health <= 0
             self.exp = args[1].exp_reward
+        elif self.type == ActionResultType.HEAL:
+            self.amnt = args[0]
 
     def success():
         return ActionResult(ActionResultType.SUCCESS, ())
@@ -42,6 +45,9 @@ class ActionResult:
 
     def did_damage(damage, entity):
         return ActionResult(ActionResultType.DID_DAMAGE, (damage, entity))
+
+    def heal(amnt):
+        return ActionResult(ActionResultType.HEAL, (amnt,))
 
     def mutate_embed(self, embed, item_store):
         if self.type == ActionResultType.GOT_LOOT:
@@ -57,6 +63,8 @@ class ActionResult:
                 embed.add_field(
                     name="It died!", value="You gained %s experience." % self.exp
                 )
+        elif self.type == ActionResultType.HEAL:
+            embed.title = "You healed %s health" % (self.amnt)
 
         return embed
 

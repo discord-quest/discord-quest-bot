@@ -159,6 +159,29 @@ class ActiveWorld(Model):
                 return ActionResult.did_damage(damage, enemy)
             else:
                 return ActionResult.error()
+        elif action.type == ActionType.HEAL:
+            # Find the item to use
+            inv_entries = await self.player_entity.inventory.filter(quantity__gte=1)
+            items = [
+                item_repo.items[x.item_id]
+                for x in inv_entries
+            ]
+            using = item_repo.find_capable(items, ItemCapability.HEAL)
+
+            # Heal that health
+            self.player_entity.health += using.amnt
+            await self.player_entity.save()
+
+            # Destroy the item
+            entry = next((x for x in inv_entries if x.item_id == using.id))
+            entry.quantity -= 1
+
+            if entry.quantity <= 0:
+                await entry.delete()
+            else:
+                await entry.save()
+
+            return ActionResult.heal(using.amnt)
         elif action.type == ActionType.WAIT:
             return ActionResult.success()
         else:
