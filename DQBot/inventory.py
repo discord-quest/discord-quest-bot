@@ -46,3 +46,9 @@ class ItemStore:
         possible = self.tiers[tier - 1]
         selected = random.randint(possible[0], possible[1])
         return self.items[selected]
+
+    def find_capable(self, items, capability):
+        capable = [x for x in items if capability in x.capabilities]
+        capable.sort(key=lambda x: x.damage, reverse=True)
+        if len(capable) > 0:
+            return capable[0]

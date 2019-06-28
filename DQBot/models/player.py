@@ -4,3 +4,4 @@ from tortoise import fields
 
 class Player(Model):
     discord_id = fields.CharField(20, pk=True)
+    exp = fields.IntField(default=0)

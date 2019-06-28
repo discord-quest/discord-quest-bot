@@ -7,13 +7,15 @@ from tortoise.query_utils import Q
 
 class ActionType(Enum):
     MOVE = 1
-    OPEN_CHEST = 2
+    OPEN_CHEST = (2,)
+    MELEE_ATTACK = 3
 
 
 class ActionResultType(Enum):
     SUCCESS = (1,)
     ERROR = (2,)
-    GOT_LOOT = 3
+    GOT_LOOT = (3,)
+    DID_DAMAGE = 4
 
 
 class ActionResult:
@@ -21,6 +23,11 @@ class ActionResult:
         self.type = type
         if self.type == ActionResultType.GOT_LOOT:
             self.loot = args[0]
+        if self.type == ActionResultType.DID_DAMAGE:
+            self.damage = args[0]
+            self.name = args[1].friendly_name
+            self.dead = args[1].health <= 0
+            self.exp = args[1].exp_reward
 
     def success():
         return ActionResult(ActionResultType.SUCCESS, ())
@@ -31,12 +38,22 @@ class ActionResult:
     def got_loot(loot):
         return ActionResult(ActionResultType.GOT_LOOT, (loot,))
 
+    def did_damage(damage, entity):
+        return ActionResult(ActionResultType.DID_DAMAGE, (damage, entity))
+
     def to_embed(self, item_store):
         if self.type == ActionResultType.GOT_LOOT:
             embed = Embed(title="You found:")
             for item in self.loot:
                 embed.add_field(
                     name=item.friendly_name, value=item.description, inline=False
+                )
+            return embed
+        elif self.type == ActionResultType.DID_DAMAGE:
+            embed = Embed(title=("You did %s damage to %s" % (self.damage, self.name)))
+            if self.dead:
+                embed.add_field(
+                    name="It died!", value="You gained %s experience." % self.exp
                 )
             return embed
         else:
@@ -84,6 +101,7 @@ DIRECTION_TO_ARROWS = {
 }
 
 CHEST_EMOJI = u"\U0001F4BC"  # TODO: Find a better emoji
+MELEE_EMOJI = u"\U0001F5E1"
 
 
 class Action:
@@ -92,7 +110,9 @@ class Action:
         self.type = type
         if self.type == ActionType.MOVE:
             self.direction = args[0]
-        if self.type == ActionType.OPEN_CHEST:
+        elif self.type == ActionType.OPEN_CHEST:
+            self.direction = args[0]
+        elif self.type == ActionType.MELEE_ATTACK:
             self.direction = args[0]
 
     def move(direction):
@@ -101,11 +121,16 @@ class Action:
     def open_chest(direction):
         return Action(ActionType.OPEN_CHEST, (direction,))
 
+    def melee_attack(direction):
+        return Action(ActionType.MELEE_ATTACK, (direction,))
+
     def to_reaction(self):
         if self.type == ActionType.MOVE:
             return DIRECTION_TO_ARROWS[self.direction]
         elif self.type == ActionType.OPEN_CHEST:
             return CHEST_EMOJI
+        elif self.type == ActionType.MELEE_ATTACK:
+            return MELEE_EMOJI
 
     async def from_emoji(emoji, active_world):
         if isinstance(emoji, str):
@@ -130,13 +155,27 @@ class Action:
                 )
 
                 return Action.open_chest(direction)
+            elif emoji == MELEE_EMOJI:
+                (x, y) = (active_world.player_entity.x, active_world.player_entity.y)
+
+                enemies = await active_world.all_enemies_with(
+                    Q(x__in=(x + 1, x - 1), y=y) | Q(y__in=(y + 1, y - 1), x=x)
+                )
+
+                enemy = enemies[0]
+
+                direction = Direction.from_delta((x, y), (enemy.x, enemy.y))
+
+                return Action.melee_attack(direction)
         return None
 
     def __str__(self):
         if self.type == ActionType.MOVE:
-            return "MOVE %s" % self.direction
+            return "<MOVE %s>" % self.direction
         elif self.type == ActionType.OPEN_CHEST:
-            return "OPEN_CHEST %s" % self.direction
+            return "<OPEN_CHEST %s>" % self.direction
+        elif self.type == ActionType.MELEE_ATTACK:
+            return "<MELEE_ATTACK %s>" % self.direction
         else:
             return "%s" % self.type
 

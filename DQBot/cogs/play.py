@@ -70,7 +70,11 @@ class Play(commands.Cog):
 
         # we added reactions for all valid actions, so it must have at least 2
         users = await reaction.users().flatten()
-        if reaction.count >= 2 and self.client.user in users:
+        if (
+            reaction.count >= 2
+            and self.client.user in users
+            and self.awaiting_response[reaction.message.id] in users
+        ):
             # get the world and stuff
             active_world = (
                 await ActiveWorld.filter(

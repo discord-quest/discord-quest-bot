@@ -1,6 +1,7 @@
 from DQBot.repo import TILE_SIZE, BlockType
 from DQBot.action import ActionType, Direction, Action, ActionResult
-from DQBot.models.entities import ChestEntity, ENTITY_RELATIONSHIPS
+from DQBot.models.entities import ChestEntity, ENTITY_RELATIONSHIPS, EnemyEntity
+from DQBot.inventory import ItemStore, ItemCapability
 
 from tortoise.models import Model
 from tortoise import fields
@@ -66,11 +67,17 @@ class ActiveWorld(Model):
                         Direction.from_delta((x, y), (entity.x, entity.y))
                     )
                 )
+            elif issubclass(entity.__class__, EnemyEntity):
+                actions.append(
+                    Action.melee_attack(
+                        Direction.from_delta((x, y), (entity.x, entity.y))
+                    )
+                )
 
         return actions
 
     # Perform the requested action in the world, ie move the player, kill the enemy
-    async def take_action(self, action, world, item_store):
+    async def take_action(self, action, world, item_repo):
         await self.fetch_related("player_entity")
         if action.type == ActionType.MOVE:
             x, y = action.direction.mutate((self.player_entity.x, self.player_entity.y))
@@ -100,7 +107,7 @@ class ActiveWorld(Model):
             chest = await self.chest_entities.filter(x=chest_x, y=chest_y).first()
 
             if chest != None and not chest.opened:
-                loot = item_store.roll_loot(chest.level)
+                loot = item_repo.roll_loot(chest.level)
 
                 await self.player_entity.add_items(loot)
 
@@ -108,6 +115,37 @@ class ActiveWorld(Model):
                 await chest.save()
 
                 return ActionResult.got_loot(loot)
+            else:
+                return ActionResult.error()
+        elif action.type == ActionType.MELEE_ATTACK:
+            enemy_x, enemy_y = action.direction.mutate(
+                (self.player_entity.x, self.player_entity.y)
+            )
+
+            enemy = await self.all_enemies_with(x=enemy_x, y=enemy_y)
+            enemy = enemy[0]
+
+            if enemy != None:
+                items = [
+                    item_repo.items[x.item_id]
+                    for x in await self.player_entity.inventory.all()
+                ]
+                using = item_repo.find_capable(items, ItemCapability.MELEE_ATTACK)
+                if using != None:
+                    damage = using.damage
+                else:
+                    damage = 1
+
+                dead = await enemy.take_damage(damage)
+
+                if dead:
+                    # Reward xp
+                    await self.fetch_related("player")
+                    self.player.exp += enemy.exp_reward
+
+                    await self.player.save()
+
+                return ActionResult.did_damage(damage, enemy)
             else:
                 return ActionResult.error()
         else:
@@ -119,6 +157,10 @@ class ActiveWorld(Model):
         zombies = await self.zombie_entities.filter(*args, **kwargs)
         chests = await self.chest_entities.filter(*args, **kwargs)
         return zombies + chests
+
+    async def all_enemies_with(self, *args, **kwargs):
+        zombies = await self.zombie_entities.filter(*args, **kwargs)
+        return zombies
 
     async def paste_entity(self, entity, image, repo, lower_bounds, upper_bounds):
         # bounds check

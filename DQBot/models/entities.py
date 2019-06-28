@@ -102,12 +102,14 @@ class EnemyEntity(Entity):
     # x = fields.IntField()
     # y = fields.IntField()
 
+    friendly_name = "missingno"
     health = fields.IntField()
     max_health = 0
     speed = 1
+    exp_reward = 0
 
     async def take_damage(self, damage):
-        self.health -= damage
+        self.health = self.health - damage
         if self.health <= 0:
             await self.delete()
         else:
@@ -121,8 +123,11 @@ class ZombieEntity(EnemyEntity):
     x = fields.IntField()
     y = fields.IntField()
 
+    health = fields.IntField()
+    friendly_name = "Zombie"
     max_health = 4
     speed = 1
+    exp_reward = 2
 
     def from_dict(obj):
         entity = ZombieEntity()
@@ -136,6 +141,15 @@ class ZombieEntity(EnemyEntity):
 
     def get_state(self):
         return "NORMAL"
+
+    async def take_damage(self, damage):
+        self.health = self.health - damage
+        if self.health <= 0:
+            await self.delete()
+            return True
+        else:
+            await self.save()
+            return False
 
 
 ENTITY_RELATIONSHIPS = ["zombie_entities", "chest_entities"]
