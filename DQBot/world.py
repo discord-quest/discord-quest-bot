@@ -42,7 +42,10 @@ class World:
 
     # Helper function
     def block_at(self, x, y):
-        return BlockType(self.grid[x, y])
+        if x >= self.grid.shape[0] or y >= self.grid.shape[1]:
+            return BlockType.ERROR
+        else:
+            return BlockType(self.grid[x, y])
 
     def from_text(text):
         lines = [x.strip() for x in text.split("\n")]

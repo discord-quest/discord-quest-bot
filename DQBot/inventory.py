@@ -1,6 +1,7 @@
 from enum import Enum
 import random
 
+
 class Item:
     id = -1
     capabilities = []
@@ -15,14 +16,17 @@ class Item:
 
 
 class ItemCapability(Enum):
-    MELEE_ATTACK = 1,
+    MELEE_ATTACK = (1,)
     HEAL = 2
+
 
 # This is such a bad way to do this
 ITEM_ID = 0
 
+
 class HealingItem(Item):
     capabilities = [ItemCapability.HEAL]
+
     def __init__(self, friendly_name, description, amnt, tier):
         global ITEM_ID
         self.id = ITEM_ID
@@ -32,6 +36,7 @@ class HealingItem(Item):
         self.amnt = amnt
 
         ITEM_ID += 1
+
 
 class MeleeWeapon:
     capabilities = [ItemCapability.MELEE_ATTACK]
@@ -45,24 +50,36 @@ class MeleeWeapon:
         self.tier = tier
         ITEM_ID += 1
 
+
 class ItemStore:
     def __init__(self):
         # TODO: This is stored really inefficiently
         self.items = [
             # Note: This needs to always be sorted by tier
-            MeleeWeapon("Wooden Sword", "It's not very strong, but it'll do.", 2, 1),  # Index 0 = ID 0
+            MeleeWeapon(
+                "Wooden Sword", "It's not very strong, but it'll do.", 2, 1
+            ),  # Index 0 = ID 0
             Item("Wooden Coin", "Small change.", 1),
             HealingItem("Rum", "Technically a solution.", 2, 1),
-            
-            MeleeWeapon("Smuggler's Sword", "Once belonged to a ring of smugglers.", 3, 2),
+            MeleeWeapon(
+                "Smuggler's Sword", "Once belonged to a ring of smugglers.", 3, 2
+            ),
             Item("Silver Coin", "Worth a bit.", 2),
             HealingItem("Salve", "", 5, 2),
-
-            MeleeWeapon("Boss' Sword", "A big hunk of metal with the word 'Mine' engraved on the helm.", 4, 3),
+            MeleeWeapon(
+                "Boss' Sword",
+                "A big hunk of metal with the word 'Mine' engraved on the helm.",
+                4,
+                3,
+            ),
             Item("Gold Coin", "Well worth the trip.", 3),
-            
-            MeleeWeapon("Legendary Sword", "A giant hunk of metal with the word 'Odgrub' engraved on the helm.", 2, 4),
-            Item("Platinum Coin", "Worth as much as this whole place.", 4)
+            MeleeWeapon(
+                "Legendary Sword",
+                "A giant hunk of metal with the word 'Odgrub' engraved on the helm.",
+                2,
+                4,
+            ),
+            Item("Platinum Coin", "Worth as much as this whole place.", 4),
         ]
 
         # tiers[tier-1] is the range (last exclusive) of indexes of items that are in that tier

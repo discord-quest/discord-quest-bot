@@ -14,7 +14,7 @@ class BlockType(Enum):
     ERROR = -1  # special error type
 
     def collides(self):
-        return self != BlockType.FLOOR
+        return self == BlockType.WALL
 
 
 # Stores the tile images represented by each block and images for

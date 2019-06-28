@@ -9,7 +9,7 @@ class ActionType(Enum):
     MOVE = 1
     OPEN_CHEST = (2,)
     MELEE_ATTACK = 3
-    WAIT = 4,
+    WAIT = (4,)
     HEAL = 5
 
 
@@ -17,7 +17,7 @@ class ActionResultType(Enum):
     SUCCESS = (1,)
     ERROR = (2,)
     GOT_LOOT = (3,)
-    DID_DAMAGE = 4,
+    DID_DAMAGE = (4,)
     HEAL = 5
 
 
@@ -113,6 +113,7 @@ CHEST_EMOJI = u"\U0001F4BC"  # TODO: Find a better emoji
 MELEE_EMOJI = u"\U0001F5E1"
 WAIT_EMOJI = u"\U0000231B"
 HEAL_EMOJI = u"\U00002764"
+
 
 class Action:
     # Don't use this directly, instead use the helper functions to ensure consistency

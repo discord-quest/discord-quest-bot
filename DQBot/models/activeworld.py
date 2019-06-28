@@ -1,6 +1,11 @@
 from DQBot.repo import TILE_SIZE, BlockType
 from DQBot.action import ActionType, Direction, Action, ActionResult
-from DQBot.models.entities import ChestEntity, ENTITY_RELATIONSHIPS, EnemyEntity, PLAYER_MAX_HEALTH
+from DQBot.models.entities import (
+    ChestEntity,
+    ENTITY_RELATIONSHIPS,
+    EnemyEntity,
+    PLAYER_MAX_HEALTH,
+)
 from DQBot.inventory import ItemStore, ItemCapability
 from DQBot.tick import TickResult
 from DQBot.conclusion import Conclusion
@@ -93,11 +98,27 @@ class ActiveWorld(Model):
 
         return actions
 
+    async def calc_items_exp(self, item_repo):
+        items = [
+            item_repo.items[x.item_id] for x in await self.player_entity.inventory.all()
+        ]
+
+        total = 0
+        for item in items:
+            total += item.tier
+
+        return total
+
     # Perform the requested action in the world, ie move the player, kill the enemy
     async def take_action(self, action, world, item_repo):
         await self.fetch_related("player_entity")
         if action.type == ActionType.MOVE:
             x, y = action.direction.mutate((self.player_entity.x, self.player_entity.y))
+
+            if x >= world.grid.shape[0] or y >= world.grid.shape[1]:
+                self.exp_earned += await self.calc_items_exp(item_repo)
+
+                return TickResult.conclude(Conclusion(True, self.exp_earned))
 
             # only save if no collisions
             if not await self.has_collision(x, y, world):
@@ -162,14 +183,13 @@ class ActiveWorld(Model):
         elif action.type == ActionType.HEAL:
             # Find the item to use
             inv_entries = await self.player_entity.inventory.filter(quantity__gte=1)
-            items = [
-                item_repo.items[x.item_id]
-                for x in inv_entries
-            ]
+            items = [item_repo.items[x.item_id] for x in inv_entries]
             using = item_repo.find_capable(items, ItemCapability.HEAL)
 
             # Heal that health
-            self.player_entity.health += using.amnt
+            self.player_entity.health = min(
+                self.player_entity.health + using.amnt, PLAYER_MAX_HEALTH
+            )
             await self.player_entity.save()
 
             # Destroy the item
@@ -270,7 +290,7 @@ class ActiveWorld(Model):
     # Rendering code
 
     # Return an image
-    # TODO: This shit is fucked. 
+    # TODO: This shit is fucked.
     async def render(self, world, repo):
         await self.fetch_related("player_entity", *ENTITY_RELATIONSHIPS)
 

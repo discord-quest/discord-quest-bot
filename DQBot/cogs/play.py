@@ -164,14 +164,14 @@ class Play(commands.Cog):
             embed = result.mutate_embed(embed, item_store)
 
             # Tell the user what happened during the tick
-            did_conclude = False
+            did_conclude = result.type == TickResultType.CONCLUDE
             for result in tick_results:
                 if result.type == TickResultType.CONCLUDE:
                     did_conclude = True
 
-                embed = result.mutate_embed(embed)
+                embed = result.mutate_embed(embed, item_store)
 
-            if len(embed.fields) > 0 or embed.title != None:
+            if len(embed.fields) > 0 or embed.title != "":
                 await reaction.message.channel.send(embed=embed)
 
             if did_conclude:

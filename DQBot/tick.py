@@ -21,7 +21,7 @@ class TickResult:
     def conclude(conclusion):
         return TickResult(TickResultType.CONCLUDE, (conclusion,))
 
-    def mutate_embed(self, embed):
+    def mutate_embed(self, embed, item_store):
         if self.type == TickResultType.TOOK_DAMAGE:
             embed.add_field(
                 name=("Took %s damage!" % self.damage),
