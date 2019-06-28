@@ -36,7 +36,7 @@ class ItemStore:
         ]
 
         # tiers[tier-1] is the range (last exclusive) of indexes of items that are in that tier
-        self.tiers = [(0, 0)]
+        self.tiers = [(0, 0), (0, 0), (0, 0)]
 
     def roll_loot(self, tier):
         # Amount of items = tier, starting at tier 1

@@ -79,6 +79,8 @@ class ActiveWorld(Model):
                     )
                 )
 
+        actions.append(Action.wait())
+
         return actions
 
     # Perform the requested action in the world, ie move the player, kill the enemy
@@ -88,7 +90,7 @@ class ActiveWorld(Model):
             x, y = action.direction.mutate((self.player_entity.x, self.player_entity.y))
 
             # only save if no collisions
-            if not self.has_collision(world):
+            if not await self.has_collision(x, y, world):
                 self.player_entity.x = x
                 self.player_entity.y = y
 
@@ -147,6 +149,8 @@ class ActiveWorld(Model):
                 return ActionResult.did_damage(damage, enemy)
             else:
                 return ActionResult.error()
+        elif action.type == ActionType.WAIT:
+            return ActionResult.success()
         else:
             raise NotImplementedError(
                 "Action processing not yet implemented: %s" % action
@@ -161,6 +165,15 @@ class ActiveWorld(Model):
             # check if in attack range
             in_range = abs(enemy.x - x) + abs(enemy.y - y) < 2
             if in_range:
+                if enemy.attack_delay != 0:
+                    if enemy.ticks_since_attack < enemy.attack_delay:
+                        enemy.ticks_since_attack += 1
+                        await enemy.save()
+                        continue
+
+                    # allowed to attack
+                    enemy.ticks_since_attack = 0
+                    await enemy.save()
                 # attack player
                 self.player_entity.health -= enemy.damage
 
@@ -175,14 +188,25 @@ class ActiveWorld(Model):
                 # TODO: Proper line of sight test
                 distance = round(sqrt(((x - enemy.x) ** 2) + ((y - enemy.y) ** 2)))
                 if distance <= enemy.vision_distance:
+                    speed = enemy.speed
+                    if enemy.speed < 1:
+                        if enemy.ticks_since_move < (1 / enemy.speed):
+                            enemy.ticks_since_move += 1
+                            await enemy.save()
+                            continue
+
+                        enemy.ticks_since_move = 0
+                        speed = 1
+
                     # TODO: Proper pathfinding
-                    direction = Direction.from_delta((enemy.x, enemy.y), (x, y))
+                    for i in range(0, speed):
+                        direction = Direction.from_delta((enemy.x, enemy.y), (x, y))
+                        (new_x, new_y) = direction.mutate((enemy.x, enemy.y))
 
-                    (new_x, new_y) = direction.mutate((enemy.x, enemy.y))
+                        if not await self.has_collision(new_x, new_y, world):
+                            enemy.x, enemy.y = (new_x, new_y)
 
-                    if not has_collision(new_x, new_y, world):
-                        enemy.x, enemy.y = (new_x, new_y)
-                        await enemy.save()
+                    await enemy.save()
 
         if len(results) > 0:
             await self.player_entity.save()
@@ -200,12 +224,14 @@ class ActiveWorld(Model):
 
     async def all_entities_with(self, *args, **kwargs):
         zombies = await self.zombie_entities.filter(*args, **kwargs)
+        big_zombies = await self.bigzombie_entities.filter(*args, **kwargs)
         chests = await self.chest_entities.filter(*args, **kwargs)
-        return zombies + chests
+        return zombies + big_zombies + chests
 
     async def all_enemies_with(self, *args, **kwargs):
         zombies = await self.zombie_entities.filter(*args, **kwargs)
-        return zombies
+        big_zombies = await self.bigzombie_entities.filter(*args, **kwargs)
+        return zombies + big_zombies
 
     # Rendering code
 

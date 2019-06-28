@@ -6,7 +6,13 @@ from DQBot.tick import TickResultType
 import discord
 
 # TODO
-NUMBER_EMOJIS = {1: u"\U00000031\U000020E3", 2: u"\U00000032\U000020E3", 3: "\U00000033\U000020E3", 4: "\U00000034\U000020E3", 5: "\U00000035\U000020E3"}
+NUMBER_EMOJIS = {
+    1: u"\U00000031\U000020E3",
+    2: u"\U00000032\U000020E3",
+    3: "\U00000033\U000020E3",
+    4: "\U00000034\U000020E3",
+    5: "\U00000035\U000020E3",
+}
 
 
 class Play(commands.Cog):
@@ -53,11 +59,10 @@ class Play(commands.Cog):
         number = 1
         for world in list(available_worlds.values())[:5]:
             embed.add_field(
-                name=("%s %s" % (NUMBER_EMOJIS[number], world.name)),
+                name=("%s %s" % (NUMBER_EMOJIS[number], world.friendly_name)),
                 value=("%s (%s)" % (world.description, world.difficulty)),
             )
             number += 1
-
 
         msg = await ctx.send(embed=embed)
 
@@ -68,7 +73,7 @@ class Play(commands.Cog):
     async def do_render(self, channel, user_id, active_world):
         # Add to render queue & send embed
         url = self.app.server.add_to_queue(active_world)
-        print(url)
+
         # It seems like embeds require a domain name and so dont work with localhost images
         embed = discord.Embed(content="Your world:")
         embed.set_image(url=url)
@@ -81,7 +86,6 @@ class Play(commands.Cog):
         world = self.app.store.bundled_worlds[active_world.world_name].world
         for action in await active_world.possible_actions(world):
             await msg.add_reaction(action.to_reaction())
-
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -102,24 +106,23 @@ class Play(commands.Cog):
             if (
                 reaction.count >= 2
                 and self.client.user in users
-                and self.new_world_awaiting_response[reaction.message.id] in [u.id for u in users]
+                and self.new_world_awaiting_response[reaction.message.id]
+                in [u.id for u in users]
             ):
                 await self.handle_action_new_world(reaction, user)
 
-                del self.awaiting_response[message_id]
+                del self.new_world_awaiting_response[message_id]
 
     async def handle_action_new_world(self, reaction, user):
         if not isinstance(reaction.emoji, str):
             return
 
         # get the targeted world
-        index = next(
-            key
-            for key, value in NUMBER_EMOJIS.items()
-            if value == reaction.emoji
-        ) - 1
+        index = (
+            next(key for key, value in NUMBER_EMOJIS.items() if value == reaction.emoji)
+            - 1
+        )
         bundled_world = list(self.app.store.bundled_worlds.values())[index]
-        print(bundled_world.name)
 
         # get the db player
         player = await Player.filter(discord_id=user.id).first()
@@ -179,9 +182,8 @@ class Play(commands.Cog):
                 await active_world.delete()
             else:
                 # Re-render
-                await self.do_render(
-                    reaction.message.channel, user.id, active_world
-                )
+                await self.do_render(reaction.message.channel, user.id, active_world)
+
 
 def setup(client):
     client.add_cog(Play(client))

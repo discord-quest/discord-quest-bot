@@ -56,7 +56,11 @@ class World:
         return grid
 
 
-ENTITY_CLASS = {"Chest": entities.ChestEntity, "Zombie": entities.ZombieEntity}
+ENTITY_CLASS = {
+    "Chest": entities.ChestEntity,
+    "Zombie": entities.ZombieEntity,
+    "BigZombie": entities.BigZombieEntity,
+}
 DEFAULT_META = {"description": "???", "difficulty": "???"}
 
 
@@ -67,6 +71,7 @@ class BundledWorld:
         self.entities = entities
         self.player_x = player_x
         self.player_y = player_y
+        self.friendly_name = meta["friendly_name"]
         self.description = meta["description"]
         self.difficulty = meta["difficulty"]
 

@@ -86,7 +86,7 @@ class ChestEntity(Entity):
         entity.x = int(obj["x"])
         entity.y = int(obj["y"])
         entity.level = int(obj["level"])
-        entity.opened = obj["opened"] == "True"
+        entity.opened = False
         return entity
 
     def __str__(self):
@@ -102,10 +102,10 @@ class ChestEntity(Entity):
     __repr__ = __str__
 
 
-class EnemyEntity(Entity):
-    # active_world = fields.ForeignKeyField("models.ActiveWorld", related_name="entities")
-    # x = fields.IntField()
-    # y = fields.IntField()
+class EnemyEntity(Model):
+    active_world = fields.ForeignKeyField("models.ActiveWorld", related_name="entities")
+    x = fields.IntField()
+    y = fields.IntField()
 
     friendly_name = "missingno"
     health = fields.IntField()
@@ -114,6 +114,10 @@ class EnemyEntity(Entity):
     exp_reward = 0
     damage = 0
     vision_distance = 0
+    attack_delay = 0
+
+    class Meta:
+        abstract = True
 
     async def take_damage(self, damage):
         self.health = self.health - damage
@@ -121,6 +125,40 @@ class EnemyEntity(Entity):
             await self.delete()
         else:
             await self.save()
+
+
+class BigZombieEntity(EnemyEntity):
+    active_world = fields.ForeignKeyField(
+        "models.ActiveWorld",
+        related_name="bigzombie_entities",
+        on_delete=fields.CASCADE,
+    )
+    x = fields.IntField()
+    y = fields.IntField()
+    health = fields.IntField()
+
+    ticks_since_move = fields.IntField(default=0)
+    ticks_since_attack = fields.IntField(default=0)
+    friendly_name = "Giant Zombie"
+    max_health = 8
+    speed = 0.5
+    exp_reward = 10
+    damage = 6
+    vision_distance = 5
+    attack_delay = 1
+
+    def from_dict(obj):
+        entity = BigZombieEntity()
+        entity.x = int(obj["x"])
+        entity.y = int(obj["y"])
+        entity.health = entity.max_health
+        return entity
+
+    def get_name(self):
+        return "GIANT_ZOMBIE"
+
+    def get_state(self):
+        return "NORMAL"
 
 
 class ZombieEntity(EnemyEntity):
@@ -151,14 +189,5 @@ class ZombieEntity(EnemyEntity):
     def get_state(self):
         return "NORMAL"
 
-    async def take_damage(self, damage):
-        self.health = self.health - damage
-        if self.health <= 0:
-            await self.delete()
-            return True
-        else:
-            await self.save()
-            return False
 
-
-ENTITY_RELATIONSHIPS = ["zombie_entities", "chest_entities"]
+ENTITY_RELATIONSHIPS = ["zombie_entities", "chest_entities", "bigzombie_entities"]
