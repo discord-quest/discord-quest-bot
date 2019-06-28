@@ -84,7 +84,7 @@ class Play(commands.Cog):
 
         # Add reactions for actions
         world = self.app.store.bundled_worlds[active_world.world_name].world
-        for action in await active_world.possible_actions(world):
+        for action in await active_world.possible_actions(world, self.app.item_store):
             await msg.add_reaction(action.to_reaction())
 
     @commands.Cog.listener()

@@ -1,6 +1,6 @@
 from DQBot.repo import TILE_SIZE, BlockType
 from DQBot.action import ActionType, Direction, Action, ActionResult
-from DQBot.models.entities import ChestEntity, ENTITY_RELATIONSHIPS, EnemyEntity
+from DQBot.models.entities import ChestEntity, ENTITY_RELATIONSHIPS, EnemyEntity, PLAYER_MAX_HEALTH
 from DQBot.inventory import ItemStore, ItemCapability
 from DQBot.tick import TickResult
 from DQBot.conclusion import Conclusion
@@ -27,10 +27,11 @@ class ActiveWorld(Model):
 
     # Finds out which actions it is possible to take
     # Returns array of `Action`s
-    async def possible_actions(self, world):
+    async def possible_actions(self, world, item_repo):
         await self.fetch_related("player_entity")
 
         actions = []
+
         x, y = (self.player_entity.x, self.player_entity.y)
 
         surrounding_entities = await self.all_entities_with(
@@ -78,6 +79,15 @@ class ActiveWorld(Model):
                         Direction.from_delta((x, y), (entity.x, entity.y))
                     )
                 )
+
+        if self.player_entity.health <= PLAYER_MAX_HEALTH:
+            items = [
+                item_repo.items[x.item_id]
+                for x in await self.player_entity.inventory.all()
+            ]
+
+            if item_repo.find_capable(items, ItemCapability.HEAL) != None:
+                actions.append(Action.heal())
 
         actions.append(Action.wait())
 

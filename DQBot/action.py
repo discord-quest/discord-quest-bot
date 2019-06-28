@@ -9,7 +9,8 @@ class ActionType(Enum):
     MOVE = 1
     OPEN_CHEST = (2,)
     MELEE_ATTACK = 3
-    WAIT = 4
+    WAIT = 4,
+    HEAL = 5
 
 
 class ActionResultType(Enum):
@@ -103,7 +104,7 @@ DIRECTION_TO_ARROWS = {
 CHEST_EMOJI = u"\U0001F4BC"  # TODO: Find a better emoji
 MELEE_EMOJI = u"\U0001F5E1"
 WAIT_EMOJI = u"\U0000231B"
-
+HEAL_EMOJI = u"\U00002764"
 
 class Action:
     # Don't use this directly, instead use the helper functions to ensure consistency
@@ -128,6 +129,9 @@ class Action:
     def wait():
         return Action(ActionType.WAIT, (None,))
 
+    def heal():
+        return Action(ActionType.HEAL, (None,))
+
     def to_reaction(self):
         if self.type == ActionType.MOVE:
             return DIRECTION_TO_ARROWS[self.direction]
@@ -137,6 +141,8 @@ class Action:
             return MELEE_EMOJI
         elif self.type == ActionType.WAIT:
             return WAIT_EMOJI
+        elif self.type == ActionType.HEAL:
+            return HEAL_EMOJI
 
     async def from_emoji(emoji, active_world):
         if isinstance(emoji, str):
@@ -173,6 +179,8 @@ class Action:
                 direction = Direction.from_delta((x, y), (enemy.x, enemy.y))
 
                 return Action.melee_attack(direction)
+            elif emoji == HEAL_EMOJI:
+                return Action.heal()
             elif emoji == WAIT_EMOJI:
                 return Action.wait()
         return None
@@ -185,6 +193,6 @@ class Action:
         elif self.type == ActionType.MELEE_ATTACK:
             return "<MELEE_ATTACK %s>" % self.direction
         else:
-            return "%s" % self.type
+            return "<%s>" % self.type
 
     __repr__ = __str__
