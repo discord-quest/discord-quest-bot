@@ -1,3 +1,6 @@
+# encoding:utf-8
+
+from discord import Emoji
 from enum import Enum
 
 
@@ -61,6 +64,14 @@ class Direction(Enum):
         return Direction.NONE
 
 
+DIRECTION_TO_ARROWS = {
+    Direction.UP: u"\U00002B06",
+    Direction.DOWN: u"\U00002B07",
+    Direction.LEFT: u"\U00002B05",
+    Direction.RIGHT: u"\U000027A1",
+}
+
+
 class Action:
     # Don't use this directly, instead use the helper functions to ensure consistency
     def __init__(self, type, args):
@@ -75,6 +86,12 @@ class Action:
 
     def open_chest(direction):
         return Action(ActionType.OPEN_CHEST, (direction,))
+
+    def to_reaction(self):
+        if self.type == ActionType.MOVE:
+            return DIRECTION_TO_ARROWS[self.direction]
+        elif self.type == ActionType.OPEN_CHEST:
+            return u"\U0001F4BC"
 
     def __str__(self):
         if self.type == ActionType.MOVE:

@@ -47,7 +47,13 @@ class Play(commands.Cog):
         # It seems like embeds require a domain name and so dont work with localhost images
         embed = discord.Embed(url=url, content="Your world:")
 
-        await ctx.send(embed=embed)
+        msg = await ctx.send(embed=embed)
+
+        # Add reactions for actions
+        # TODO: Allow actually doing these actions
+        world = self.app.store.bundled_worlds[active_world.world_name].world
+        for action in await active_world.possible_actions(world):
+            await msg.add_reaction(action.to_reaction())
 
 
 def setup(client):

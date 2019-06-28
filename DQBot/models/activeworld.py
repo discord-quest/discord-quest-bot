@@ -28,21 +28,37 @@ class ActiveWorld(Model):
         actions = []
         x, y = (self.player_entity.x, self.player_entity.y)
 
-        if not world.block_at(x, y + 1).collides():
-            actions.append(Action.move(Direction.DOWN))
-
-        if not world.block_at(x, y - 1).collides():
-            actions.append(Action.move(Direction.UP))
-
-        if not world.block_at(x + 1, y).collides():
-            actions.append(Action.move(Direction.RIGHT))
-
-        if not world.block_at(x - 1, y).collides():
-            actions.append(Action.move(Direction.LEFT))
-
         surrounding_entities = await self.entities.filter(
             Q(x__in=(x + 1, x - 1), y=y) | Q(y__in=(y + 1, y - 1), x=x)
         )
+
+        entity_blocked_directions = [
+            Direction.from_delta((x, y), (e.x, e.y)) for e in surrounding_entities
+        ]
+
+        if (
+            not world.block_at(x, y + 1).collides()
+            and Direction.DOWN not in entity_blocked_directions
+        ):
+            actions.append(Action.move(Direction.DOWN))
+
+        if (
+            not world.block_at(x, y - 1).collides()
+            and Direction.UP not in entity_blocked_directions
+        ):
+            actions.append(Action.move(Direction.UP))
+
+        if (
+            not world.block_at(x + 1, y).collides()
+            and Direction.RIGHT not in entity_blocked_directions
+        ):
+            actions.append(Action.move(Direction.RIGHT))
+
+        if (
+            not world.block_at(x - 1, y).collides()
+            and Direction.LEFT not in entity_blocked_directions
+        ):
+            actions.append(Action.move(Direction.LEFT))
 
         for entity in surrounding_entities:
             if entity.__class__ is ChestEntity and not entity.opened:
