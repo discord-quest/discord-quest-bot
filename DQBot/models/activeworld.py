@@ -2,6 +2,7 @@ from DQBot.repo import TILE_SIZE, BlockType
 from DQBot.action import ActionType, Direction, Action, ActionResult
 from DQBot.models.entities import ChestEntity, ENTITY_RELATIONSHIPS, EnemyEntity
 from DQBot.inventory import ItemStore, ItemCapability
+from DQBot.tick import TickResult
 
 from tortoise.models import Model
 from tortoise import fields
@@ -232,3 +233,28 @@ class ActiveWorld(Model):
             self.player_entity, image, repo, lower_bounds, upper_bounds
         )
         return image
+
+    async def do_tick(self, world, item_store):
+        await self.fetch_related("player_entity")
+        (x, y) = (self.player_entity.x, self.player_entity.y)
+
+        results = []
+        for enemy in await self.all_enemies_with():
+            # check if in attack range
+            in_range = abs(enemy.x - x) + abs(enemy.y - y) < 2
+            if in_range:
+                # attack player
+                self.player_entity.health -= enemy.damage
+
+                # TODO: Death logic
+                results.append(
+                    TickResult.took_damage(enemy.damage, self.player_entity.health)
+                )
+            else:
+                # TODO: otherwise, move them
+                pass
+
+        if len(results) > 0:
+            await self.player_entity.save()
+
+        return results

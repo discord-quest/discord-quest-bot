@@ -30,11 +30,14 @@ class Entity(Model):
         raise NotImplementedError("base Entity.from_json called")
 
 
+PLAYER_MAX_HEALTH = 20
+
 # The player
 # Because this is referenced by ActiveWorld, inheriting from Entity would cause a catch-22
 class PlayerEntity(Model):
     x = fields.IntField()
     y = fields.IntField()
+    health = fields.IntField(default=PLAYER_MAX_HEALTH)
 
     def get_name(self):
         return "PLAYER"
@@ -107,6 +110,7 @@ class EnemyEntity(Entity):
     max_health = 0
     speed = 1
     exp_reward = 0
+    damage = 0
 
     async def take_damage(self, damage):
         self.health = self.health - damage
@@ -128,6 +132,7 @@ class ZombieEntity(EnemyEntity):
     max_health = 4
     speed = 1
     exp_reward = 2
+    damage = 2
 
     def from_dict(obj):
         entity = ZombieEntity()

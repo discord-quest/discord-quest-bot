@@ -41,23 +41,22 @@ class ActionResult:
     def did_damage(damage, entity):
         return ActionResult(ActionResultType.DID_DAMAGE, (damage, entity))
 
-    def to_embed(self, item_store):
+    def mutate_embed(self, embed, item_store):
         if self.type == ActionResultType.GOT_LOOT:
-            embed = Embed(title="You found:")
+            embed.title = "You found:"
             for item in self.loot:
                 embed.add_field(
                     name=item.friendly_name, value=item.description, inline=False
                 )
-            return embed
+
         elif self.type == ActionResultType.DID_DAMAGE:
-            embed = Embed(title=("You did %s damage to %s" % (self.damage, self.name)))
+            embed.title = "You did %s damage to %s" % (self.damage, self.name)
             if self.dead:
                 embed.add_field(
                     name="It died!", value="You gained %s experience." % self.exp
                 )
-            return embed
-        else:
-            return None
+
+        return embed
 
 
 # co-ord system is 0 is upper-left

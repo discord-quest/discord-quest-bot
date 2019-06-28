@@ -4,6 +4,7 @@ from asyncio import TimeoutError
 from os import getenv
 
 from discord.ext import commands
+import logging
 
 
 class ErrorHandling(commands.Cog):
@@ -24,6 +25,7 @@ class ErrorHandling(commands.Cog):
                 await ctx.send(
                     "Error raised! Since you're a developer, I'm DMing you the traceback."
                 )
+                logging.error(format_exception(type(exc), exc, exc.__traceback__))
                 await ctx.author.send(
                     f"```py\n{''.join(format_exception(type(exc), exc, exc.__traceback__))}\n```"
                 )

@@ -73,7 +73,7 @@ class Play(commands.Cog):
         if (
             reaction.count >= 2
             and self.client.user in users
-            and self.awaiting_response[reaction.message.id] in users
+            and self.awaiting_response[reaction.message.id] in [u.id for u in users]
         ):
             # get the world and stuff
             active_world = (
@@ -95,9 +95,20 @@ class Play(commands.Cog):
                 world = self.app.store.bundled_worlds[active_world.world_name].world
                 result = await active_world.take_action(action, world, item_store)
 
-                # Tell the user what happened
-                embed = result.to_embed(item_store)
-                if embed != None:
+                # Do a tick of the world
+                # This is when enemies move, etc
+                tick_results = await active_world.do_tick(world, item_store)
+
+                embed = discord.Embed()
+
+                # Tell the user what they did
+                embed = result.mutate_embed(embed, item_store)
+
+                # Tell the user what happened during the tick
+                for result in tick_results:
+                    embed = result.mutate_embed(embed)
+
+                if len(embed.fields) > 0:
                     await reaction.message.channel.send(embed=embed)
 
                 # Re-render
