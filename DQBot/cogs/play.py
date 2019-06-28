@@ -2,6 +2,7 @@ from discord.ext import commands
 from DQBot.action import Action, Direction
 from DQBot.models import ActiveWorld, Player
 from DQBot.models.entities import ENTITY_RELATIONSHIPS
+from DQBot.tick import TickResultType
 import discord
 
 
@@ -104,14 +105,26 @@ class Play(commands.Cog):
                 embed = result.mutate_embed(embed, item_store)
 
                 # Tell the user what happened during the tick
+                did_conclude = False
                 for result in tick_results:
+                    if result.type == TickResultType.CONCLUDE:
+                        did_conclude = True
+
                     embed = result.mutate_embed(embed)
 
                 if len(embed.fields) > 0:
                     await reaction.message.channel.send(embed=embed)
 
-                # Re-render
-                await self.do_render(reaction.message.channel, user.id)
+                if did_conclude:
+                    # Default delete isn't recursive for some reason
+                    await active_world.player_entity.delete()
+                    for entity in await active_world.all_entities_with():
+                        await entity.delete()
+                    await active_world.delete()
+                else:
+                    # Re-render
+                    await self.do_render(reaction.message.channel, user.id)
+
 
 
 def setup(client):

@@ -8,7 +8,7 @@ from .inventory import InventoryEntry
 # For example an enemy which takes damage and eventually dies
 # But also a chest that can only be looted once
 class Entity(Model):
-    active_world = fields.ForeignKeyField("models.ActiveWorld", related_name="entities")
+    active_world = fields.ForeignKeyField("models.ActiveWorld", related_name="entities", on_delete=fields.CASCADE)
     x = fields.IntField()
     y = fields.IntField()
 
@@ -63,7 +63,7 @@ class PlayerEntity(Model):
 class ChestEntity(Entity):
     # TODO: Inheritance isn't working properly for some reason
     active_world = fields.ForeignKeyField(
-        "models.ActiveWorld", related_name="chest_entities"
+        "models.ActiveWorld", related_name="chest_entities", on_delete=fields.CASCADE
     )
     x = fields.IntField()
     y = fields.IntField()
@@ -123,7 +123,7 @@ class EnemyEntity(Entity):
 
 class ZombieEntity(EnemyEntity):
     active_world = fields.ForeignKeyField(
-        "models.ActiveWorld", related_name="zombie_entities"
+        "models.ActiveWorld", related_name="zombie_entities", on_delete=fields.CASCADE
     )
     x = fields.IntField()
     y = fields.IntField()

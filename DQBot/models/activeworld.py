@@ -3,6 +3,7 @@ from DQBot.action import ActionType, Direction, Action, ActionResult
 from DQBot.models.entities import ChestEntity, ENTITY_RELATIONSHIPS, EnemyEntity
 from DQBot.inventory import ItemStore, ItemCapability
 from DQBot.tick import TickResult
+from DQBot.conclusion import Conclusion
 
 from tortoise.models import Model
 from tortoise import fields
@@ -22,6 +23,7 @@ class ActiveWorld(Model):
     player_entity = fields.ForeignKeyField(
         "models.PlayerEntity", related_name="active_world"
     )
+    exp_earned = fields.IntField(default=0)
 
     # Finds out which actions it is possible to take
     # Returns array of `Action`s
@@ -137,7 +139,9 @@ class ActiveWorld(Model):
                     # Reward xp
                     await self.fetch_related("player")
                     self.player.exp += enemy.exp_reward
+                    self.exp_earned += enemy.exp_reward
 
+                    await self.save()
                     await self.player.save()
 
                 return ActionResult.did_damage(damage, enemy)
@@ -148,6 +152,52 @@ class ActiveWorld(Model):
                 "Action processing not yet implemented: %s" % action
             )
 
+    async def do_tick(self, world, item_store):
+        await self.fetch_related("player_entity")
+        (x, y) = (self.player_entity.x, self.player_entity.y)
+
+        results = []
+        for enemy in await self.all_enemies_with():
+            # check if in attack range
+            in_range = abs(enemy.x - x) + abs(enemy.y - y) < 2
+            if in_range:
+                # attack player
+                self.player_entity.health -= enemy.damage
+
+                results.append(
+                    TickResult.took_damage(enemy.damage, self.player_entity.health)
+                )
+                if self.player_entity.health <= 0:
+                    results.append(
+                        TickResult.conclude(Conclusion(False, self.exp_earned))
+                    )
+            else:
+                # TODO: Proper line of sight test
+                distance = round(sqrt(((x - enemy.x) ** 2) + ((y - enemy.y) ** 2)))
+                if distance <= enemy.vision_distance:
+                    # TODO: Proper pathfinding
+                    direction = Direction.from_delta((enemy.x, enemy.y), (x, y))
+
+                    (new_x, new_y) = direction.mutate((enemy.x, enemy.y))
+
+                    if not has_collision(new_x, new_y, world):
+                        enemy.x, enemy.y = (new_x, new_y)
+                        await enemy.save()
+
+        if len(results) > 0:
+            await self.player_entity.save()
+
+        return results
+
+    async def has_collision(self, x, y, world):
+        if BlockType(world.grid[x, y]).collides():
+            return True
+        else:
+            entities_in_direction = await self.all_entities_with(x=x, y=y)
+            return len(entities_in_direction) > 0
+
+    # Relationship helpers
+
     async def all_entities_with(self, *args, **kwargs):
         zombies = await self.zombie_entities.filter(*args, **kwargs)
         chests = await self.chest_entities.filter(*args, **kwargs)
@@ -157,32 +207,7 @@ class ActiveWorld(Model):
         zombies = await self.zombie_entities.filter(*args, **kwargs)
         return zombies
 
-    async def paste_entity(self, entity, image, repo, lower_bounds, upper_bounds):
-        # bounds check
-        if False in tuple(
-            a > lower_bounds[i] and a < upper_bounds[i]
-            for i, a in enumerate((entity.x, entity.y))
-        ):
-            return
-
-        # translate to local world co-ords
-        local_world_coords = (entity.x - lower_bounds[0], entity.y - lower_bounds[1])
-
-        # then to local image co-ords
-        image_coords = (
-            (local_world_coords[0]) * TILE_SIZE,
-            (local_world_coords[1]) * TILE_SIZE,
-        )
-
-        # get image to render
-        entity_image = repo.entity(entity.get_name(), entity.get_state())
-
-        # paste onto map
-        image.paste(
-            entity_image,
-            tuple(int(a) for a in image_coords),
-            entity_image.convert("RGBA"),
-        )
+    # Rendering code
 
     # Return an image
     async def render(self, world, repo):
@@ -228,43 +253,29 @@ class ActiveWorld(Model):
         )
         return image
 
-    async def do_tick(self, world, item_store):
-        await self.fetch_related("player_entity")
-        (x, y) = (self.player_entity.x, self.player_entity.y)
+    async def paste_entity(self, entity, image, repo, lower_bounds, upper_bounds):
+        # bounds check
+        if False in tuple(
+            a > lower_bounds[i] and a < upper_bounds[i]
+            for i, a in enumerate((entity.x, entity.y))
+        ):
+            return
 
-        results = []
-        for enemy in await self.all_enemies_with():
-            # check if in attack range
-            in_range = abs(enemy.x - x) + abs(enemy.y - y) < 2
-            if in_range:
-                # attack player
-                self.player_entity.health -= enemy.damage
+        # translate to local world co-ords
+        local_world_coords = (entity.x - lower_bounds[0], entity.y - lower_bounds[1])
 
-                # TODO: Death logic
-                results.append(
-                    TickResult.took_damage(enemy.damage, self.player_entity.health)
-                )
-            else:
-                # TODO: Proper line of sight test
-                distance = round(sqrt(((x - enemy.x) ** 2) + ((y - enemy.y) ** 2)))
-                if distance <= enemy.vision_distance:
-                    # TODO: Proper pathfinding
-                    direction = Direction.from_delta((enemy.x, enemy.y), (x, y))
+        # then to local image co-ords
+        image_coords = (
+            (local_world_coords[0]) * TILE_SIZE,
+            (local_world_coords[1]) * TILE_SIZE,
+        )
 
-                    (new_x, new_y) = direction.mutate((enemy.x, enemy.y))
+        # get image to render
+        entity_image = repo.entity(entity.get_name(), entity.get_state())
 
-                    if not has_collision(new_x, new_y, world):
-                        enemy.x, enemy.y = (new_x, new_y)
-                        await enemy.save()
-
-        if len(results) > 0:
-            await self.player_entity.save()
-
-        return results
-
-    async def has_collision(self, x, y, world):
-        if BlockType(world.grid[x, y]).collides():
-            return True
-        else:
-            entities_in_direction = await self.all_entities_with(x=x, y=y)
-            return len(entities_in_direction) > 0
+        # paste onto map
+        image.paste(
+            entity_image,
+            tuple(int(a) for a in image_coords),
+            entity_image.convert("RGBA"),
+        )
