@@ -13,6 +13,7 @@ class Play(commands.Cog):
     @commands.command()
     async def play(self, ctx):
         await self.do_render(ctx.channel, ctx.author.id)
+
     async def do_render(self, channel, user_id):
         # Get active world and everything else needed to render
         active_world = (
@@ -69,11 +70,15 @@ class Play(commands.Cog):
         if reaction.count >= 2 and self.client.user in users:
             # get the world and stuff
             active_world = (
-                await ActiveWorld.filter(player__discord_id=self.awaiting_response[reaction.message.id])
-                .prefetch_related("player_entity", "entities", "player_entity__inventory")
+                await ActiveWorld.filter(
+                    player__discord_id=self.awaiting_response[reaction.message.id]
+                )
+                .prefetch_related(
+                    "player_entity", "entities", "player_entity__inventory"
+                )
                 .first()
             )
-            
+
             # construct the action
             action = await Action.from_emoji(reaction.emoji, active_world)
 
