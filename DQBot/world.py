@@ -57,23 +57,29 @@ class World:
 
 
 ENTITY_CLASS = {"Chest": entities.ChestEntity, "Zombie": entities.ZombieEntity}
+DEFAULT_META = {"description": "???", "difficulty": "???"}
 
 
 class BundledWorld:
-    def __init__(self, name, world, entities, player_x, player_y):
+    def __init__(self, name, world, entities, player_x, player_y, meta):
         self.name = name
         self.world = world
         self.entities = entities
         self.player_x = player_x
         self.player_y = player_y
+        self.description = meta["description"]
+        self.difficulty = meta["difficulty"]
 
     def parse_entities(text):
         arr = []
         player_x, player_y = (None, None)
+        meta = DEFAULT_META
         for obj in json.loads(text):
             if obj["type"] == "Player":
                 player_x = int(obj["x"])
                 player_y = int(obj["y"])
+            elif obj["type"] == "Meta":
+                meta = obj
             else:
                 clazz = ENTITY_CLASS[obj["type"]]
                 arr.append((clazz, obj))
@@ -81,7 +87,7 @@ class BundledWorld:
         if player_x == None:
             raise ValueError("No playerentity found for map")
 
-        return (player_x, player_y, arr)
+        return (player_x, player_y, arr, meta)
 
     async def from_file(name, file, repo):
         contents = await file.read()
@@ -91,9 +97,11 @@ class BundledWorld:
         grid = World.from_text(grid_chunk)
         world = World(grid, repo)
 
-        (player_x, player_y, entities) = BundledWorld.parse_entities(entities_chunk)
+        (player_x, player_y, entities, meta) = BundledWorld.parse_entities(
+            entities_chunk
+        )
 
-        return BundledWorld(name, world, entities, player_x, player_y)
+        return BundledWorld(name, world, entities, player_x, player_y, meta)
 
     async def create_for(self, player):
         player_entity = PlayerEntity(x=self.player_x, y=self.player_y)

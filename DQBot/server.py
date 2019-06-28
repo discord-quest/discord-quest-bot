@@ -82,7 +82,7 @@ class RenderServer:
 
     async def handle(self, req):
         # get the id of what we're supposed to render
-        queue_id = req.match_info.get("id")
+        queue_id = int(req.match_info.get("id"))
 
         if queue_id != None and queue_id in self.queue:
             # render it
