@@ -174,7 +174,7 @@ class ZombieEntity(EnemyEntity):
     speed = 1
     exp_reward = 2
     damage = 2
-    vision_distance = 3
+    vision_distance = 4
 
     def from_dict(obj):
         entity = ZombieEntity()

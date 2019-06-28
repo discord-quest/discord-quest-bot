@@ -186,7 +186,8 @@ class ActiveWorld(Model):
                     )
             else:
                 # TODO: Proper line of sight test
-                distance = round(sqrt(((x - enemy.x) ** 2) + ((y - enemy.y) ** 2)))
+                distance = sqrt(((x - enemy.x) ** 2) + ((y - enemy.y) ** 2))
+
                 if distance <= enemy.vision_distance:
                     speed = enemy.speed
                     if enemy.speed < 1:
