@@ -79,7 +79,7 @@ class ChestEntity(Entity):
         return "CHEST"
 
     def get_state(self):
-        return "OPENED" if self.opened else "CLOSED"
+        return "OPEN" if self.opened else "CLOSED"
 
     def from_dict(obj):
         entity = ChestEntity()
