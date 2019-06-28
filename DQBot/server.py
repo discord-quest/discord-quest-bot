@@ -89,7 +89,7 @@ class RenderServer:
             resp = await self.process_render(self.queue[queue_id])
 
             # schedule delete from queue
-            asyncio.create_task(self.remove_from_queue(queue_id))
+            # asyncio.create_task(self.remove_from_queue(queue_id))
 
             return resp
         else:
