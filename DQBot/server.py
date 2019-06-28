@@ -7,6 +7,7 @@ from io import BytesIO
 import logging
 import aiofiles
 import asyncio
+import uuid
 
 # TODO: Async this. Since it's done at startup it might not be too bad though
 
@@ -46,8 +47,8 @@ class RenderServer:
 
     # Returns the image URL of the rendered map
     def add_to_queue(self, active_world):
-        # TODO: Should this be a properly random thing?
-        queue_id = str(active_world.id)
+        # UUID prevents caching
+        queue_id = uuid.uuid1().int
 
         self.queue[queue_id] = active_world
         return self.address + str(queue_id) + ".png"
