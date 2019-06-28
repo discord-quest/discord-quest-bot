@@ -45,5 +45,4 @@ class ItemStore:
     def roll_item(self, tier):
         possible = self.tiers[tier - 1]
         selected = random.randint(possible[0], possible[1])
-        print(selected)
         return self.items[selected]

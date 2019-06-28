@@ -70,9 +70,9 @@ class Direction(Enum):
         elif new[0] < base[0]:
             return Direction.LEFT
         elif new[1] > base[1]:
-            return Direction.UP
-        elif new[1] < base[1]:
             return Direction.DOWN
+        elif new[1] < base[1]:
+            return Direction.UP
         return Direction.NONE
 
 
@@ -120,7 +120,7 @@ class Action:
             elif emoji == CHEST_EMOJI:
                 (x, y) = (active_world.player_entity.x, active_world.player_entity.y)
 
-                unopened_chest = await active_world.entities.filter(
+                unopened_chest = await active_world.chest_entities.filter(
                     Q(x__in=(x + 1, x - 1), y=y)
                     | Q(y__in=(y + 1, y - 1), x=x) & Q(opened=False)
                 ).first()

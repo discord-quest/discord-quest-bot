@@ -1,6 +1,6 @@
 from DQBot.repo import TILE_SIZE, BlockType
 from DQBot.action import ActionType, Direction, Action, ActionResult
-from DQBot.models.entities import ChestEntity
+from DQBot.models.entities import ChestEntity, ENTITY_RELATIONSHIPS
 
 from tortoise.models import Model
 from tortoise import fields
@@ -21,14 +21,13 @@ class ActiveWorld(Model):
 
     # Finds out which actions it is possible to take
     # Returns array of `Action`s
-    # TODO: Untested
     async def possible_actions(self, world):
         await self.fetch_related("player_entity")
 
         actions = []
         x, y = (self.player_entity.x, self.player_entity.y)
 
-        surrounding_entities = await self.entities.filter(
+        surrounding_entities = await self.all_entities_with(
             Q(x__in=(x + 1, x - 1), y=y) | Q(y__in=(y + 1, y - 1), x=x)
         )
 
@@ -81,7 +80,7 @@ class ActiveWorld(Model):
             if BlockType(world.grid[x, y]).collides():
                 has_collision = True
             else:
-                entities_in_direction = await self.entities.filter(x=x, y=y)
+                entities_in_direction = await self.all_entities_with(x=x, y=y)
                 has_collision = len(entities_in_direction) > 0
 
             # only save if no collisions
@@ -98,7 +97,7 @@ class ActiveWorld(Model):
             chest_x, chest_y = action.direction.mutate(
                 (self.player_entity.x, self.player_entity.y)
             )
-            chest = await self.entities.filter(x=chest_x, y=chest_y).first()
+            chest = await self.chest_entities.filter(x=chest_x, y=chest_y).first()
 
             if chest != None and not chest.opened:
                 loot = item_store.roll_loot(chest.level)
@@ -115,6 +114,11 @@ class ActiveWorld(Model):
             raise NotImplementedError(
                 "Action processing not yet implemented: %s" % action
             )
+
+    async def all_entities_with(self, *args, **kwargs):
+        zombies = await self.zombie_entities.filter(*args, **kwargs)
+        chests = await self.chest_entities.filter(*args, **kwargs)
+        return zombies + chests
 
     async def paste_entity(self, entity, image, repo, lower_bounds, upper_bounds):
         # bounds check
@@ -137,12 +141,15 @@ class ActiveWorld(Model):
         entity_image = repo.entity(entity.get_name(), entity.get_state())
 
         # paste onto map
-        image.paste(entity_image, tuple(int(a) for a in image_coords))
+        image.paste(
+            entity_image,
+            tuple(int(a) for a in image_coords),
+            entity_image.convert("RGBA"),
+        )
 
     # Return an image
     async def render(self, world, repo):
-        await self.fetch_related("player_entity")
-        await self.fetch_related("entities")
+        await self.fetch_related("player_entity", *ENTITY_RELATIONSHIPS)
 
         # cut out the view around the player
         # TODO: Probably nicer looking ways to do this
@@ -170,7 +177,13 @@ class ActiveWorld(Model):
             for i, a in enumerate((self.player_entity.x, self.player_entity.y))
         )
 
-        async for entity in self.entities:
+        entities = await self.all_entities_with(
+            x__lte=upper_bounds[0],
+            x__gte=lower_bounds[0],
+            y__lte=upper_bounds[1],
+            y__gte=lower_bounds[1],
+        )
+        for entity in entities:
             await self.paste_entity(entity, image, repo, lower_bounds, upper_bounds)
 
         await self.paste_entity(

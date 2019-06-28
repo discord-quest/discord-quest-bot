@@ -59,7 +59,9 @@ class PlayerEntity(Model):
 # Higher level = better loot
 class ChestEntity(Entity):
     # TODO: Inheritance isn't working properly for some reason
-    active_world = fields.ForeignKeyField("models.ActiveWorld", related_name="entities")
+    active_world = fields.ForeignKeyField(
+        "models.ActiveWorld", related_name="chest_entities"
+    )
     x = fields.IntField()
     y = fields.IntField()
     level = fields.IntField()
@@ -93,3 +95,47 @@ class ChestEntity(Entity):
         )
 
     __repr__ = __str__
+
+
+class EnemyEntity(Entity):
+    # active_world = fields.ForeignKeyField("models.ActiveWorld", related_name="entities")
+    # x = fields.IntField()
+    # y = fields.IntField()
+
+    health = fields.IntField()
+    max_health = 0
+    speed = 1
+
+    async def take_damage(self, damage):
+        self.health -= damage
+        if self.health <= 0:
+            await self.delete()
+        else:
+            await self.save()
+
+
+class ZombieEntity(EnemyEntity):
+    active_world = fields.ForeignKeyField(
+        "models.ActiveWorld", related_name="zombie_entities"
+    )
+    x = fields.IntField()
+    y = fields.IntField()
+
+    max_health = 4
+    speed = 1
+
+    def from_dict(obj):
+        entity = ZombieEntity()
+        entity.x = int(obj["x"])
+        entity.y = int(obj["y"])
+        entity.health = entity.max_health
+        return entity
+
+    def get_name(self):
+        return "ZOMBIE"
+
+    def get_state(self):
+        return "NORMAL"
+
+
+ENTITY_RELATIONSHIPS = ["zombie_entities", "chest_entities"]

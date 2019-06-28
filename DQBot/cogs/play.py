@@ -1,6 +1,7 @@
 from discord.ext import commands
 from DQBot.action import Action, Direction
 from DQBot.models import ActiveWorld, Player
+from DQBot.models.entities import ENTITY_RELATIONSHIPS
 import discord
 
 
@@ -18,7 +19,9 @@ class Play(commands.Cog):
         # Get active world and everything else needed to render
         active_world = (
             await ActiveWorld.filter(player__discord_id=user_id)
-            .prefetch_related("player_entity", "entities", "player_entity__inventory")
+            .prefetch_related(
+                "player_entity", "player_entity__inventory", *ENTITY_RELATIONSHIPS
+            )
             .first()
         )
 
@@ -38,8 +41,8 @@ class Play(commands.Cog):
                 )
 
                 await active_world.fetch_related(
-                    "player_entity", "entities", "player_entity__inventory"
-                ).first()
+                    "player_entity", "player_entity__inventory", *ENTITY_RELATIONSHIPS
+                )
             else:
                 await channel.send("Couldn't register you as a player.")
 
@@ -74,7 +77,7 @@ class Play(commands.Cog):
                     player__discord_id=self.awaiting_response[reaction.message.id]
                 )
                 .prefetch_related(
-                    "player_entity", "entities", "player_entity__inventory"
+                    "player_entity", "player_entity__inventory", *ENTITY_RELATIONSHIPS
                 )
                 .first()
             )

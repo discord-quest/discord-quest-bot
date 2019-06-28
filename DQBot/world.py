@@ -56,7 +56,7 @@ class World:
         return grid
 
 
-ENTITY_CLASS = {"Chest": entities.ChestEntity}
+ENTITY_CLASS = {"Chest": entities.ChestEntity, "Zombie": entities.ZombieEntity}
 
 
 class BundledWorld:
