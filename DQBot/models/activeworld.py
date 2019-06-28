@@ -236,6 +236,7 @@ class ActiveWorld(Model):
     # Rendering code
 
     # Return an image
+    # TODO: This shit is fucked. 
     async def render(self, world, repo):
         await self.fetch_related("player_entity", *ENTITY_RELATIONSHIPS)
 
@@ -266,10 +267,10 @@ class ActiveWorld(Model):
         )
 
         entities = await self.all_entities_with(
-            x__lte=upper_bounds[0],
-            x__gte=lower_bounds[0],
-            y__lte=upper_bounds[1],
-            y__gte=lower_bounds[1],
+            x__lte=upper_bounds[0] + 1,
+            x__gte=lower_bounds[0] - 1,
+            y__lte=upper_bounds[1] + 1,
+            y__gte=lower_bounds[1] - 1,
         )
         for entity in entities:
             await self.paste_entity(entity, image, repo, lower_bounds, upper_bounds)
@@ -282,7 +283,7 @@ class ActiveWorld(Model):
     async def paste_entity(self, entity, image, repo, lower_bounds, upper_bounds):
         # bounds check
         if False in tuple(
-            a > lower_bounds[i] and a < upper_bounds[i]
+            a >= lower_bounds[i] and a <= upper_bounds[i]
             for i, a in enumerate((entity.x, entity.y))
         ):
             return
