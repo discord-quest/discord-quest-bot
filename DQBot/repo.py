@@ -11,6 +11,7 @@ logger = logging.getLogger("repo")
 class BlockType(Enum):
     FLOOR = 1
     WALL = 2
+    WALL_FRONT_VISIBLE = 3
     ERROR = -1  # special error type
 
     def collides(self):

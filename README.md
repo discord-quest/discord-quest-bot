@@ -35,3 +35,11 @@ Set up pre-commit hook (for linting):
   $ pip install black
   $ ln ./scripts/pre_commit .git/hooks/pre-commit 
 ```
+
+# Attribution
+
+Placeholder art:
+
+	- Zombie - CharlesGabriel (opengameart.org, CC-BY 3.0)
+	- Chest - Blarumyrran (opengameart.org, CC 0)
+	- Tiles - https://opengameart.org/content/lpc-tile-atlas (GPL 3.0)
