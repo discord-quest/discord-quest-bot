@@ -8,7 +8,9 @@ from .inventory import InventoryEntry
 # For example an enemy which takes damage and eventually dies
 # But also a chest that can only be looted once
 class Entity(Model):
-    active_world = fields.ForeignKeyField("models.ActiveWorld", related_name="entities", on_delete=fields.CASCADE)
+    active_world = fields.ForeignKeyField(
+        "models.ActiveWorld", related_name="entities", on_delete=fields.CASCADE
+    )
     x = fields.IntField()
     y = fields.IntField()
 

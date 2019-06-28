@@ -51,7 +51,8 @@ class Play(commands.Cog):
         url = self.app.server.add_to_queue(active_world)
 
         # It seems like embeds require a domain name and so dont work with localhost images
-        embed = discord.Embed(url=url, content="Your world:")
+        embed = discord.Embed(content="Your world:")
+        embed.set_image(url=url)
 
         msg = await channel.send(embed=embed)
 
@@ -124,7 +125,6 @@ class Play(commands.Cog):
                 else:
                     # Re-render
                     await self.do_render(reaction.message.channel, user.id)
-
 
 
 def setup(client):

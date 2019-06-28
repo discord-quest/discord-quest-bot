@@ -74,7 +74,7 @@ class RenderServer:
             )  # TODO: Allocate initial bytes? also might be more efficient way to do this
             image.save(buf, format="png")
 
-            return web.Response(body=buf.getvalue(), content_type="application/png")
+            return web.Response(body=buf.getvalue(), content_type="image/png")
         except Exception as e:
             logging.error(e)
             return web.Response(text="Something went wrong")
@@ -104,10 +104,19 @@ class RenderServer:
         await self.runner.setup()
 
         host = getenv("HTTP_HOST")
-        port = getenv("HTTP_PORT")
-        self.address = "http://%s:%s/" % (host, port)
+        port = int(getenv("PORT"))
 
-        self.site = web.TCPSite(self.runner, host, port)
+        external_port = port
+
+        if getenv("EXTERNAL_PORT") != None:
+            external_port = int(getenv("EXTERNAL_PORT"))
+
+        if external_port != 80:
+            self.address = "http://%s:%s/" % (host, port)
+        else:
+            self.address = "http://%s/" % host
+
+        self.site = web.TCPSite(self.runner, None, port)
         await self.site.start()
 
         logger.debug("Render server started at %s" % self.address)
