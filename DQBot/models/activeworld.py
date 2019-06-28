@@ -8,6 +8,8 @@ from tortoise.models import Model
 from tortoise import fields
 from tortoise.query_utils import Q
 
+from math import sqrt
+
 # The amount of tiles player around them players can see
 VIEW_SIZE = (5, 5)
 
@@ -83,16 +85,8 @@ class ActiveWorld(Model):
         if action.type == ActionType.MOVE:
             x, y = action.direction.mutate((self.player_entity.x, self.player_entity.y))
 
-            # collision detection
-            has_collision = False
-            if BlockType(world.grid[x, y]).collides():
-                has_collision = True
-            else:
-                entities_in_direction = await self.all_entities_with(x=x, y=y)
-                has_collision = len(entities_in_direction) > 0
-
             # only save if no collisions
-            if not has_collision:
+            if not self.has_collision(world):
                 self.player_entity.x = x
                 self.player_entity.y = y
 
@@ -251,10 +245,26 @@ class ActiveWorld(Model):
                     TickResult.took_damage(enemy.damage, self.player_entity.health)
                 )
             else:
-                # TODO: otherwise, move them
-                pass
+                # TODO: Proper line of sight test
+                distance = round(sqrt(((x - enemy.x) ** 2) + ((y - enemy.y) ** 2)))
+                if distance <= enemy.vision_distance:
+                    # TODO: Proper pathfinding
+                    direction = Direction.from_delta((enemy.x, enemy.y), (x, y))
+
+                    (new_x, new_y) = direction.mutate((enemy.x, enemy.y))
+
+                    if not has_collision(new_x, new_y, world):
+                        enemy.x, enemy.y = (new_x, new_y)
+                        await enemy.save()
 
         if len(results) > 0:
             await self.player_entity.save()
 
         return results
+
+    async def has_collision(self, x, y, world):
+        if BlockType(world.grid[x, y]).collides():
+            return True
+        else:
+            entities_in_direction = await self.all_entities_with(x=x, y=y)
+            return len(entities_in_direction) > 0

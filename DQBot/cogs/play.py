@@ -54,13 +54,12 @@ class Play(commands.Cog):
 
         msg = await channel.send(embed=embed)
 
+        self.awaiting_response[msg.id] = user_id
+
         # Add reactions for actions
-        # TODO: Allow actually doing these actions
         world = self.app.store.bundled_worlds[active_world.world_name].world
         for action in await active_world.possible_actions(world):
             await msg.add_reaction(action.to_reaction())
-
-        self.awaiting_response[msg.id] = user_id
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):

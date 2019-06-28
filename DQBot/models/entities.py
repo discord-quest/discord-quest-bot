@@ -111,6 +111,7 @@ class EnemyEntity(Entity):
     speed = 1
     exp_reward = 0
     damage = 0
+    vision_distance = 0
 
     async def take_damage(self, damage):
         self.health = self.health - damage
@@ -133,6 +134,7 @@ class ZombieEntity(EnemyEntity):
     speed = 1
     exp_reward = 2
     damage = 2
+    vision_distance = 3
 
     def from_dict(obj):
         entity = ZombieEntity()
