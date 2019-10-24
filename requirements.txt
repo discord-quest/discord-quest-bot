@@ -2,7 +2,7 @@ discord.py==1.2.2
 aiomysql==0.0.20
 tortoise-orm==0.12.2
 numpy==1.16.4
-Pillow==6.0.0
+Pillow==6.2.0
 python-dotenv==0.10.3
 aiohttp==3.5.4
 jishaku==1.14.0.129
