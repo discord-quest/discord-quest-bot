@@ -1,6 +1,6 @@
 discord.py==1.2.2
 aiomysql==0.0.20
-tortoise-orm==0.12.2
+tortoise-orm==0.15.23
 numpy==1.16.4
 Pillow==6.2.0
 python-dotenv==0.10.3
