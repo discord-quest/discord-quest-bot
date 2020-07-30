@@ -77,7 +77,7 @@ class Play(commands.Cog):
         # It seems like embeds require a domain name and so dont work with localhost images
         embed = discord.Embed(content="Your world:")
         embed.set_image(url=url)
-
+        print(url)
         msg = await channel.send(embed=embed)
 
         self.awaiting_response[msg.id] = user_id
